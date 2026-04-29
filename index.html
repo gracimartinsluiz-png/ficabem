@@ -311,10 +311,9 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
 .setor-mini-fill{height:100%;border-radius:2px}
 
 /* ── botão flutuante de feedback ── */
-.fab-feedback{position:fixed;bottom:90px;right:16px;z-index:9000;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-.fab-btn{width:48px;height:48px;border-radius:50%;background:var(--g);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(61,107,94,.4);transition:transform .2s}
+.fab-feedback{position:absolute;bottom:90px;right:16px;z-index:9000;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.fab-btn{display:flex;align-items:center;gap:6px;background:var(--g);border:none;cursor:pointer;padding:10px 14px 10px 12px;border-radius:24px;box-shadow:0 4px 16px rgba(61,107,94,.4);transition:transform .2s;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#fff}
 .fab-btn:active{transform:scale(.92)}
-.fab-label{background:var(--dark);color:#fff;font-size:12px;font-weight:600;padding:6px 12px;border-radius:20px;white-space:nowrap;font-family:'DM Sans',sans-serif;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .foto-galeria{overflow-x:auto;display:flex;gap:8px;padding:0 20px 16px}
 .foto-galeria::-webkit-scrollbar{display:none}
 .foto-thumb{width:100px;height:80px;border-radius:var(--rs);object-fit:cover;flex-shrink:0;border:.5px solid var(--bd);cursor:pointer;transition:opacity .18s}
@@ -1380,10 +1379,10 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
 </div>
 
 <!-- Botão flutuante de feedback -->
-<div class="fab-feedback" id="fab-feedback">
-  <div class="fab-label" id="fab-label" style="display:none">Dar feedback</div>
-  <button class="fab-btn" onclick="abrirFeedback()" onmouseenter="document.getElementById('fab-label').style.display='block'" onmouseleave="document.getElementById('fab-label').style.display='none'" title="Dar feedback">
-    <svg width="22" height="22" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+<div class="fab-feedback">
+  <button class="fab-btn" onclick="abrirFeedback()">
+    <svg width="16" height="16" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    Feedback
   </button>
 </div>
 
