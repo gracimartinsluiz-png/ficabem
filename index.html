@@ -1,0 +1,1793 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Fica Bem</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#3D6B5E;--gl:#5A8B7A;--gp:#EAF2EF;--gm:#B8D4CC;
+  --cream:#F7F4EE;--white:#fff;--dark:#1A1A18;
+  --t:#2A2A26;--t2:#6B6B64;--t3:#AEAEA4;
+  --bd:rgba(42,42,38,.1);--bd2:rgba(42,42,38,.16);
+  --safe:#3D6B5E;--safebg:#E8F2EE;
+  --warn:#C47C2B;--warnbg:#FDF0DC;
+  --risk:#C0392B;--riskbg:#FBEAE8;
+  --r:18px;--rs:12px;--rx:24px;
+  --sh:0 1px 12px rgba(42,42,38,.07),0 1px 2px rgba(42,42,38,.05);
+  --sh2:0 4px 24px rgba(42,42,38,.12)
+}
+html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);color:var(--t);-webkit-tap-highlight-color:transparent}
+.app{max-width:430px;margin:0 auto;height:100vh;display:flex;flex-direction:column;background:var(--cream);overflow:hidden;position:relative}
+
+/* ── screens ── */
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--cream);transition:transform .32s cubic-bezier(.4,0,.2,1),opacity .32s ease;pointer-events:none;opacity:0;transform:translateX(100%)}
+.screen.active{transform:translateX(0);opacity:1;pointer-events:all;z-index:10}
+.screen.prev{transform:translateX(-40px);opacity:0;z-index:5}
+.screen.root{transform:translateX(0);opacity:1;pointer-events:all;z-index:1}
+
+/* ── scroll ── */
+.scroll{overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
+.scroll::-webkit-scrollbar{display:none}
+.pad{padding:0 16px}
+
+/* ── bottom nav ── */
+.bnav{background:rgba(247,244,238,.96);backdrop-filter:blur(12px);border-top:.5px solid var(--bd);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 0 20px;flex-shrink:0;z-index:100}
+.ni{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:none;border:none;color:var(--t3);font-family:'DM Sans',sans-serif;font-size:10px;padding:4px 0;transition:color .18s;position:relative}
+.ni.on{color:var(--g)}
+.ni svg{width:24px;height:24px;stroke-width:1.6}
+.ni.on svg{stroke-width:2}
+
+/* ── status bar fake ── */
+.sbar{height:0px;background:var(--cream);flex-shrink:0}
+
+/* ── topbar ── */
+.topbar{display:flex;align-items:center;padding:14px 16px 10px;gap:10px;background:rgba(247,244,238,.95);backdrop-filter:blur(10px);flex-shrink:0;border-bottom:.5px solid var(--bd)}
+.logo{font-family:'Fraunces',serif;font-size:24px;font-weight:300;color:var(--g);letter-spacing:-.02em;flex:1}
+.logo em{font-style:italic}
+.avatar-sm{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--gl));display:flex;align-items:center;justify-content:center;font-size:15px;cursor:pointer;flex-shrink:0}
+
+/* ── search bar ── */
+.searchbar{display:flex;align-items:center;gap:10px;background:#fff;border:.5px solid var(--bd2);border-radius:var(--rx);padding:10px 14px;margin:10px 16px 0;cursor:pointer}
+.searchbar svg{color:var(--t3);flex-shrink:0}
+.searchbar span{font-size:14px;color:var(--t3)}
+
+/* ── stories (locais em destaque horizontal) ── */
+.stories-wrap{overflow-x:auto;padding:14px 16px 10px;display:flex;gap:12px;flex-shrink:0}
+.stories-wrap::-webkit-scrollbar{display:none}
+.story{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0}
+.story-ring{width:62px;height:62px;border-radius:50%;padding:2px;background:conic-gradient(var(--safe) 0%,var(--safe) 80%,var(--bd) 80%)}
+.story-ring.warn{background:conic-gradient(var(--warn) 0%,var(--warn) 55%,var(--bd) 55%)}
+.story-ring.risk{background:conic-gradient(var(--risk) 0%,var(--risk) 30%,var(--bd) 30%)}
+.story-inner{width:100%;height:100%;border-radius:50%;border:2.5px solid var(--cream);display:flex;align-items:center;justify-content:center;font-size:24px;background:#fff}
+.story-label{font-size:10px;color:var(--t2);font-weight:500;text-align:center;max-width:64px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── section header ── */
+.sec-head{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 10px}
+.sec-title{font-size:13px;font-weight:600;color:var(--t)}
+.sec-link{font-size:13px;color:var(--g);font-weight:500;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+/* ── post card (feed style) ── */
+.post{background:#fff;border-radius:var(--r);margin:0 16px 14px;overflow:hidden;box-shadow:var(--sh);border:.5px solid var(--bd)}
+.post-header{display:flex;align-items:center;gap:10px;padding:12px 14px 10px}
+.post-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:var(--gp)}
+.post-info{flex:1;min-width:0}
+.post-name{font-size:14px;font-weight:600;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.post-meta{font-size:11px;color:var(--t3)}
+.post-badge{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.bs{background:var(--safebg);color:var(--safe)}
+.bw{background:var(--warnbg);color:var(--warn)}
+.br{background:var(--riskbg);color:var(--risk)}
+.post-badge .dot{width:6px;height:6px;border-radius:50%}
+.bs .dot{background:var(--safe)}
+.bw .dot{background:var(--warn)}
+.br .dot{background:var(--risk)}
+
+/* post image area */
+.post-img{height:220px;background:linear-gradient(160deg,#D4E6E0,#BDD4CB);position:relative;overflow:hidden;cursor:pointer}
+.post-img::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 32px,rgba(255,255,255,.12) 32px,rgba(255,255,255,.12) 33px),repeating-linear-gradient(90deg,transparent,transparent 32px,rgba(255,255,255,.12) 32px,rgba(255,255,255,.12) 33px)}
+.post-img-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:54px;opacity:.6}
+.post-type-tag{position:absolute;top:12px;left:12px;background:rgba(255,255,255,.9);backdrop-filter:blur(4px);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:5px}
+.post-time-tag{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;color:#fff}
+.post-score-pill{position:absolute;bottom:12px;left:12px;right:12px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-radius:var(--rs);padding:10px 14px;display:flex;align-items:center;gap:12px}
+.score-num{font-family:'Fraunces',serif;font-size:26px;font-weight:300;line-height:1;flex-shrink:0}
+.score-bars{flex:1;display:flex;flex-direction:column;gap:4px}
+.sbar-row{display:flex;align-items:center;gap:6px}
+.sbar-lbl{font-size:10px;color:var(--t3);width:58px;flex-shrink:0}
+.sbar-bg{flex:1;height:4px;background:var(--bd);border-radius:2px;overflow:hidden}
+.sbar-fill{height:100%;border-radius:2px}
+
+/* post body */
+.post-body{padding:12px 14px}
+.post-place-name{font-size:16px;font-weight:600;margin-bottom:2px;cursor:pointer}
+.post-place-name:hover{color:var(--g)}
+.post-addr{font-size:12px;color:var(--t3);margin-bottom:10px}
+.post-comment{font-size:14px;color:var(--t2);line-height:1.6;margin-bottom:12px}
+.post-comment .ctx{font-weight:600;color:var(--t)}
+.post-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{font-size:11px;padding:4px 10px;border-radius:20px;background:var(--cream);border:.5px solid var(--bd2);color:var(--t2);font-weight:500}
+.chip.good{background:var(--safebg);color:var(--safe);border-color:var(--gm)}
+.chip.bad{background:var(--riskbg);color:var(--risk);border-color:rgba(192,57,43,.2)}
+.chip.mid{background:var(--warnbg);color:var(--warn);border-color:rgba(196,124,43,.2)}
+
+/* post actions */
+.post-actions{display:flex;align-items:center;gap:0;border-top:.5px solid var(--bd);margin:0 -14px;padding:0 14px}
+.post-act{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px 0;font-size:13px;color:var(--t3);cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color .18s}
+.post-act:hover{color:var(--g)}
+.post-act svg{width:18px;height:18px;stroke-width:1.6}
+.post-act-divider{width:.5px;height:24px;background:var(--bd)}
+
+/* ── detail screen ── */
+.d-header{position:relative;height:260px;background:linear-gradient(160deg,#C8DDD6,#A8C4BC);overflow:hidden;flex-shrink:0}
+.d-header::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 32px,rgba(255,255,255,.1) 32px,rgba(255,255,255,.1) 33px),repeating-linear-gradient(90deg,transparent,transparent 32px,rgba(255,255,255,.1) 32px,rgba(255,255,255,.1) 33px)}
+.d-header-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:72px;opacity:.5}
+.d-back{position:absolute;top:16px;left:16px;width:36px;height:36px;background:rgba(255,255,255,.85);backdrop-filter:blur(6px);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;z-index:5}
+.d-share-btn{position:absolute;top:16px;right:16px;width:36px;height:36px;background:rgba(255,255,255,.85);backdrop-filter:blur(6px);border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:5}
+.d-card{background:#fff;border-radius:var(--rx) var(--rx) 0 0;margin-top:-24px;position:relative;z-index:2;flex:1}
+.d-card-top{padding:20px 20px 0}
+.d-type-row{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.d-type-pill{display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;background:var(--cream);border:.5px solid var(--bd2);font-size:12px;font-weight:500;color:var(--t2)}
+.d-name{font-family:'Fraunces',serif;font-size:26px;font-weight:300;letter-spacing:-.02em;line-height:1.2;margin-bottom:4px}
+.d-addr{font-size:13px;color:var(--t3);margin-bottom:16px}
+
+/* score big */
+.d-score-box{background:var(--cream);border-radius:var(--rs);padding:16px;margin-bottom:16px}
+.d-score-top{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.d-score-num{font-family:'Fraunces',serif;font-size:48px;font-weight:300;line-height:1;color:var(--safe)}
+.d-score-num.warn{color:var(--warn)}
+.d-score-num.risk{color:var(--risk)}
+.d-score-right{flex:1}
+.d-score-label{font-size:15px;font-weight:600;margin-bottom:4px}
+.d-score-sub{font-size:12px;color:var(--t3);line-height:1.5}
+.d-time-tabs{display:flex;gap:6px;margin-bottom:12px}
+.d-tab{padding:7px 14px;border-radius:20px;font-size:13px;font-weight:500;border:.5px solid var(--bd2);background:transparent;color:var(--t2);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.d-tab.on{background:var(--g);color:#fff;border-color:var(--g)}
+.d-bars{display:flex;flex-direction:column;gap:8px}
+.d-bar-row{display:flex;align-items:center;gap:10px}
+.d-bar-label{font-size:13px;color:var(--t2);width:90px;flex-shrink:0}
+.d-bar-bg{flex:1;height:6px;background:var(--bd);border-radius:3px;overflow:hidden}
+.d-bar-fill{height:100%;border-radius:3px;transition:width .5s ease}
+.d-bar-val{font-size:12px;font-weight:600;color:var(--t);width:26px;text-align:right}
+
+/* reasons */
+.d-reasons{padding:0 20px;margin-bottom:16px}
+.d-reason{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:.5px solid var(--bd)}
+.d-reason:last-child{border-bottom:none}
+.d-reason-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.d-reason-text{font-size:14px;color:var(--t2);line-height:1.5}
+.d-reason-text strong{color:var(--t);font-weight:600}
+
+/* comments in detail */
+.d-comments{padding:0 20px 20px}
+.d-comment{background:var(--cream);border-radius:var(--rs);padding:14px;margin-bottom:10px}
+.d-comment-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.d-comment-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--gl));display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;color:#fff;font-weight:600}
+.d-comment-meta{flex:1}
+.d-comment-name{font-size:13px;font-weight:600}
+.d-comment-ctx{font-size:11px;color:var(--t3);margin-top:1px}
+.d-comment-text{font-size:14px;color:var(--t2);line-height:1.6;margin-bottom:8px}
+.d-comment-chips{display:flex;gap:6px;flex-wrap:wrap}
+.d-disclaimer{font-size:11px;color:var(--t3);text-align:center;padding:8px 0 4px;line-height:1.5}
+
+/* CTAs */
+.d-ctas{padding:0 20px 32px;display:flex;flex-direction:column;gap:10px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px 20px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;border:none;cursor:pointer;transition:opacity .2s,transform .1s;letter-spacing:.01em}
+.btn:active{transform:scale(.98)}
+.btn-p{background:var(--g);color:#fff}.btn-p:hover{opacity:.9}
+.btn-s{background:var(--gp);color:var(--g);border:.5px solid var(--gm)}.btn-s:hover{opacity:.85}
+.btn-full{width:100%}
+
+/* ── avaliação ── */
+.eval-progress{height:3px;background:var(--bd);position:relative;flex-shrink:0}
+.eval-prog-fill{position:absolute;left:0;top:0;height:100%;background:var(--g);border-radius:0 2px 2px 0;transition:width .4s ease}
+.eval-step{padding:24px 20px 0;display:none}
+.eval-step.on{display:block}
+.eval-step-num{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:6px}
+.eval-q{font-family:'Fraunces',serif;font-size:22px;font-weight:300;line-height:1.25;margin-bottom:20px}
+.eval-q em{font-style:italic;color:var(--g)}
+.eval-opts{display:flex;flex-direction:column;gap:10px}
+.eval-opt{padding:16px 18px;border-radius:var(--rs);border:1.5px solid var(--bd2);background:#fff;font-family:'DM Sans',sans-serif;font-size:15px;text-align:left;cursor:pointer;color:var(--t);transition:all .2s;display:flex;align-items:center;gap:12px;box-shadow:var(--sh)}
+.eval-opt:hover{border-color:var(--gm);background:var(--gp)}
+.eval-opt.sel{border-color:var(--g);background:var(--gp);color:var(--g);font-weight:600}
+.eval-opt.sel-w{border-color:var(--warn);background:var(--warnbg);color:var(--warn);font-weight:600}
+.eval-opt.sel-r{border-color:var(--risk);background:var(--riskbg);color:var(--risk);font-weight:600}
+.eval-opt-icon{font-size:22px;flex-shrink:0;width:32px;text-align:center}
+.eval-opt-text{flex:1}
+.eval-opt-title{font-size:15px;font-weight:500}
+.eval-opt-sub{font-size:12px;color:var(--t3);margin-top:2px}
+
+/* eval nav */
+.eval-nav{display:flex;gap:10px;padding:20px;flex-shrink:0}
+
+/* ── rota ── */
+.rota-map{height:180px;background:linear-gradient(160deg,#D4E6E0,#BDD4CB);position:relative;overflow:hidden;flex-shrink:0}
+.rota-map::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 28px,rgba(255,255,255,.15) 28px,rgba(255,255,255,.15) 29px),repeating-linear-gradient(90deg,transparent,transparent 28px,rgba(255,255,255,.15) 28px,rgba(255,255,255,.15) 29px)}
+.you-dot{position:absolute;width:14px;height:14px;background:#3B82F6;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 6px rgba(59,130,246,.2)}
+.sharing-pill{display:flex;align-items:center;gap:10px;padding:14px 16px;background:var(--safebg);border-radius:var(--rs);border:1px solid var(--gm);margin-bottom:12px}
+.pulse{width:10px;height:10px;border-radius:50%;background:var(--safe);position:relative;flex-shrink:0}
+.pulse::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--safe);opacity:0;animation:pu 1.8s ease-out infinite}
+@keyframes pu{0%{opacity:.6;transform:scale(.8)}100%{opacity:0;transform:scale(1.8)}}
+.contact-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:.5px solid var(--bd);cursor:pointer}
+.contact-row:hover .contact-name{color:var(--g)}
+.c-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;flex-shrink:0}
+
+/* ── perfil ── */
+.profile-cover{height:130px;background:linear-gradient(135deg,#2E5249,#3D6B5E 60%,#4A8070);position:relative;flex-shrink:0}
+.profile-avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--gl));border:4px solid var(--cream);display:flex;align-items:center;justify-content:center;font-size:32px;position:absolute;bottom:-40px;left:20px;box-shadow:0 4px 16px rgba(61,107,94,.3)}
+.profile-body{padding:52px 20px 20px}
+.menu-row{display:flex;align-items:center;gap:14px;padding:15px 0;border-bottom:.5px solid var(--bd);cursor:pointer;transition:opacity .18s}
+.menu-row:last-child{border-bottom:none}
+.menu-row:hover{opacity:.7}
+.menu-icon{width:40px;height:40px;border-radius:12px;background:var(--gp);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+
+/* ── onboard ── */
+.ob-bg{background:linear-gradient(160deg,#2A4D43,#3D6B5E 55%,#4D8570);flex:1;display:flex;flex-direction:column;padding:56px 28px 44px;color:#fff;position:relative;overflow:hidden}
+.ob-bg::before{content:'';position:absolute;top:-100px;right:-80px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.05)}
+.ob-bg::after{content:'';position:absolute;bottom:-80px;left:-60px;width:240px;height:240px;border-radius:50%;background:rgba(255,255,255,.04)}
+.ob-logo{font-family:'Fraunces',serif;font-size:38px;font-weight:300;letter-spacing:-.03em;margin-bottom:4px}
+.ob-logo em{font-style:italic}
+.ob-sub{font-size:14px;opacity:.6;margin-bottom:auto}
+.ob-illo{display:flex;align-items:center;justify-content:center;padding:36px 0}
+.ob-circle{width:190px;height:190px;border-radius:50%;background:rgba(255,255,255,.1);position:relative;display:flex;align-items:center;justify-content:center}
+.ob-circle::before{content:'';position:absolute;inset:-18px;border-radius:50%;border:1px solid rgba(255,255,255,.15)}
+.ob-inner{width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;font-size:54px}
+.ob-h{font-family:'Fraunces',serif;font-size:30px;font-weight:300;line-height:1.2;margin-bottom:10px}
+.ob-h em{font-style:italic}
+.ob-p{font-size:15px;opacity:.68;line-height:1.65;margin-bottom:32px}
+.btn-white{background:#fff;color:var(--g);width:100%;padding:16px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;border:none;cursor:pointer;margin-bottom:12px;letter-spacing:.01em}
+.btn-ghost{background:transparent;color:rgba(255,255,255,.7);width:100%;padding:14px;border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:15px;border:1px solid rgba(255,255,255,.2);cursor:pointer}
+
+/* ── email landing ── */
+.email-bar{background:#ECEBE6;padding:10px 16px;border-bottom:1px solid #D8D6D0;font-size:12px;color:#666;line-height:1.5}
+
+/* ── cadastro ── */
+.cad-progress{height:3px;background:var(--bd);flex-shrink:0;position:relative}
+.cad-prog-fill{position:absolute;left:0;top:0;height:100%;background:var(--g);border-radius:0 2px 2px 0;transition:width .4s ease}
+.field-label{font-size:13px;color:var(--t2);margin-bottom:6px;font-weight:500}
+.field-input{width:100%;padding:13px 16px;border:.5px solid var(--bd2);border-radius:var(--rs);font-family:'DM Sans',sans-serif;font-size:15px;background:#fff;color:var(--t);outline:none;transition:border-color .2s,box-shadow .2s}
+.field-input:focus{border-color:var(--g);box-shadow:0 0 0 3px rgba(61,107,94,.1)}
+.field-input::placeholder{color:var(--t3)}
+.field-hint{font-size:11px;color:var(--g);margin-top:4px}
+.field-wrap{margin-bottom:14px}
+
+/* ── convidar ── */
+.invite-preview{background:var(--cream);border-radius:var(--rs);padding:14px 16px;border:.5px dashed var(--bd2)}
+
+/* ── boas vindas ── */
+.bv-bg{background:linear-gradient(160deg,#2A4D43,#3D6B5E 50%,#4D8570);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 28px;text-align:center;color:#fff;position:relative;overflow:hidden}
+
+/* ── toast ── */
+.toast{position:fixed;bottom:110px;left:50%;transform:translateX(-50%);background:#1A1A18;color:#fff;padding:12px 22px;border-radius:24px;font-size:14px;font-weight:500;z-index:9999;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+
+/* ── setores (categorias no header do feed) ── */
+.setores-wrap{overflow-x:auto;padding:14px 16px 10px;display:flex;gap:10px;flex-shrink:0}
+.setores-wrap::-webkit-scrollbar{display:none}
+.setor{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;min-width:64px}
+.setor-ring{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;border:2px solid var(--bd);background:#fff;transition:all .18s;box-shadow:var(--sh);position:relative}
+.setor-ring.safe{border-color:var(--gm);background:var(--gp)}
+.setor-ring.warn{border-color:#E8C17A;background:#FDF6E3}
+.setor-ring.risk{border-color:#E8B0AB;background:#FDF0EF}
+.setor-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;border:1.5px solid #fff}
+.setor-dot.safe{background:var(--safe)}
+.setor-dot.warn{background:var(--warn)}
+.setor-dot.risk{background:var(--risk)}
+.setor-label{font-size:10px;color:var(--t2);font-weight:500;text-align:center;max-width:68px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── tela de setor ── */
+.setor-header-bg{height:110px;position:relative;flex-shrink:0;overflow:hidden;display:flex;align-items:flex-end;padding:0 16px 14px}
+.setor-header-bg::before{content:'';position:absolute;inset:0;background:linear-gradient(160deg,#2E5249,#3D6B5E 60%,#4A8070)}
+.setor-header-bg.warn::before{background:linear-gradient(160deg,#7A5A1E,#C47C2B 60%,#D4943A)}
+.setor-header-bg.risk::before{background:linear-gradient(160deg,#7A2E2A,#C0392B 60%,#D04535)}
+.setor-title-emoji{font-size:32px;margin-right:10px}
+.setor-title-text{font-family:'Fraunces',serif;font-size:26px;font-weight:300;color:#fff;letter-spacing:-.02em}
+.setor-title-text em{font-style:italic}
+.setor-subtitle{font-size:12px;color:rgba(255,255,255,.65);margin-top:2px}
+
+.setor-place-row{display:flex;align-items:center;gap:12px;background:#fff;border:.5px solid var(--bd);border-radius:var(--r);padding:14px 16px;margin:0 16px 10px;box-shadow:var(--sh);cursor:pointer;transition:opacity .18s}
+.setor-place-row:hover{opacity:.85}
+.setor-place-icon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.setor-place-info{flex:1;min-width:0}
+.setor-place-name{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.setor-place-addr{font-size:12px;color:var(--t3);margin-top:1px}
+.setor-place-score{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0}
+.setor-score-num{font-family:'Fraunces',serif;font-size:24px;font-weight:300;line-height:1}
+.setor-mini-bars{display:flex;flex-direction:column;gap:3px;width:60px}
+.setor-mini-bar{height:3px;border-radius:2px;background:var(--bd);overflow:hidden}
+.setor-mini-fill{height:100%;border-radius:2px}
+
+/* ── galeria de fotos ── */
+.foto-galeria{overflow-x:auto;display:flex;gap:8px;padding:0 20px 16px}
+.foto-galeria::-webkit-scrollbar{display:none}
+.foto-thumb{width:100px;height:80px;border-radius:var(--rs);object-fit:cover;flex-shrink:0;border:.5px solid var(--bd);cursor:pointer;transition:opacity .18s}
+.foto-thumb:hover{opacity:.85}
+.foto-thumb-placeholder{width:100px;height:80px;border-radius:var(--rs);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:28px;border:.5px solid var(--bd);background:var(--cream)}
+.foto-upload-area{border:1.5px dashed var(--bd2);border-radius:var(--rs);padding:20px;text-align:center;cursor:pointer;transition:all .2s;background:#fff;position:relative;overflow:hidden}
+.foto-upload-area:hover{border-color:var(--gm);background:var(--gp)}
+.foto-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.foto-preview-wrap{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.foto-preview-item{position:relative;width:80px;height:80px}
+.foto-preview-img{width:80px;height:80px;border-radius:var(--rs);object-fit:cover;border:.5px solid var(--bd)}
+.foto-preview-del{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--risk);color:#fff;border:none;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;line-height:1;font-weight:700}
+.lightbox{position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:99999;display:none;align-items:center;justify-content:center;flex-direction:column;padding:20px}
+.lightbox.open{display:flex}
+.lightbox-img{max-width:95vw;max-height:78vh;border-radius:var(--rs);object-fit:contain}
+.lightbox-close{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:22px;width:42px;height:42px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.lightbox-caption{color:rgba(255,255,255,.55);font-size:12px;margin-top:10px;text-align:center}
+
+.ocorr-chip{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:var(--rs);border:1.5px solid var(--bd2);background:#fff;font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;color:var(--t);transition:all .2s;box-shadow:var(--sh);margin:4px}
+.ocorr-chip:hover{border-color:var(--risk);background:var(--riskbg)}
+.ocorr-chip.sel-r{border-color:var(--risk);background:var(--riskbg);color:var(--risk);font-weight:600}
+.ocorr-chips-wrap{display:flex;flex-wrap:wrap;margin:-4px}
+
+/* ── check-in de rota ── */
+.checkin-bar{background:#fff;border:.5px solid var(--bd);border-radius:var(--rs);padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh)}
+.checkin-timer{font-family:'Fraunces',serif;font-size:38px;font-weight:300;color:var(--g);text-align:center;letter-spacing:.02em;line-height:1}
+.checkin-label{font-size:12px;color:var(--t3);text-align:center;margin-top:4px}
+.checkin-btn{width:100%;padding:16px;border-radius:var(--rs);background:var(--g);color:#fff;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;border:none;cursor:pointer;margin-top:12px;transition:opacity .2s}
+.checkin-btn:active{opacity:.85}
+.checkin-btn.alert{background:var(--risk)}
+
+/* ── pontos de apoio ── */
+.apoio-card{display:flex;align-items:center;gap:12px;background:#fff;border:.5px solid var(--bd);border-radius:var(--rs);padding:14px 16px;margin-bottom:8px;box-shadow:var(--sh);cursor:pointer}
+.apoio-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.apoio-info{flex:1;min-width:0}
+.apoio-name{font-size:14px;font-weight:600;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.apoio-dist{font-size:12px;color:var(--t3)}
+.apoio-open{font-size:11px;font-weight:600;padding:3px 8px;border-radius:10px}
+.apoio-open.aberto{background:var(--safebg);color:var(--safe)}
+.apoio-open.fechado{background:var(--riskbg);color:var(--risk)}
+
+/* utils */
+.divider{height:.5px;background:var(--bd);margin:0 -16px}
+.gap4{height:4px}.gap8{height:8px}.gap12{height:12px}.gap16{height:16px}.gap20{height:20px}.gap24{height:24px}
+.row{display:flex;align-items:center;gap:8px}
+.row-between{display:flex;align-items:center;justify-content:space-between}
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══════════════════════════════════════════════
+     ONBOARDING
+══════════════════════════════════════════════ -->
+<div class="screen active" id="s-onboard">
+  <div class="ob-bg">
+    <div class="ob-logo">Fica <em>Bem</em></div>
+    <div class="ob-sub">Navegue com segurança</div>
+    <div class="ob-illo">
+      <div class="ob-circle">
+        <div class="ob-inner">🗺️</div>
+      </div>
+    </div>
+    <div class="ob-h">Decida com <em>confiança</em> para onde ir</div>
+    <div class="ob-p">Avaliações reais de mulheres, score de risco contextual e compartilhamento de rota.</div>
+    <button class="btn-white" onclick="go('feed')">Começar agora</button>
+    <button class="btn-ghost" onclick="go('email-landing')">Recebi um convite por e-mail</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     FEED PRINCIPAL
+══════════════════════════════════════════════ -->
+<div class="screen" id="s-feed">
+  <div class="topbar">
+    <span class="logo">Fica <em>Bem</em></span>
+    <div class="row" style="gap:8px">
+      <button style="background:none;border:none;cursor:pointer;color:var(--t3);padding:4px" onclick="go('explorar')">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      </button>
+      <div class="avatar-sm" onclick="go('perfil')">👩</div>
+    </div>
+  </div>
+
+  <div class="scroll">
+    <!-- Setores — categorias de locais -->
+    <div class="setores-wrap">
+      <div class="setor" onclick="openSetor('parques')">
+        <div class="setor-ring safe"><span>🌳</span><div class="setor-dot safe"></div></div>
+        <div class="setor-label">Parques</div>
+      </div>
+      <div class="setor" onclick="openSetor('shoppings')">
+        <div class="setor-ring safe"><span>🛍️</span><div class="setor-dot safe"></div></div>
+        <div class="setor-label">Shoppings</div>
+      </div>
+      <div class="setor" onclick="openSetor('terminais')">
+        <div class="setor-ring warn"><span>🚇</span><div class="setor-dot warn"></div></div>
+        <div class="setor-label">Terminais</div>
+      </div>
+      <div class="setor" onclick="openSetor('happyhour')">
+        <div class="setor-ring warn"><span>🍺</span><div class="setor-dot warn"></div></div>
+        <div class="setor-label">Happy Hour</div>
+      </div>
+      <div class="setor" onclick="openSetor('vilagermanica')">
+        <div class="setor-ring safe"><span>🎪</span><div class="setor-dot safe"></div></div>
+        <div class="setor-label">Vila Germânica</div>
+      </div>
+      <div class="setor" onclick="openSetor('eventos')">
+        <div class="setor-ring safe"><span>🎉</span><div class="setor-dot safe"></div></div>
+        <div class="setor-label">Eventos</div>
+      </div>
+      <div class="setor" onclick="openSetor('cultura')">
+        <div class="setor-ring safe"><span>🎭</span><div class="setor-dot safe"></div></div>
+        <div class="setor-label">Cultura</div>
+      </div>
+      <div class="setor" onclick="openSetor('natureza')">
+        <div class="setor-ring warn"><span>🌲</span><div class="setor-dot warn"></div></div>
+        <div class="setor-label">Natureza</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Post 1 — avaliação recente -->
+    <div style="height:12px"></div>
+    <div class="post">
+      <div class="post-header">
+        <div class="post-avatar">👩</div>
+        <div class="post-info">
+          <div class="post-name">Ana Luíza</div>
+          <div class="post-meta">avaliou um local · há 2h</div>
+        </div>
+        <div class="post-badge bs"><div class="dot"></div>Seguro</div>
+      </div>
+      <div class="post-img" onclick="openPlace('parque')">
+        <div class="post-img-icon">🌳</div>
+        <div class="post-type-tag">🌳 Parque</div>
+        <div class="post-time-tag">Noite · 21h</div>
+        <div class="post-score-pill">
+          <div class="score-num" style="color:var(--safe)">84</div>
+          <div class="score-bars">
+            <div class="sbar-row"><div class="sbar-lbl">Iluminação</div><div class="sbar-bg"><div class="sbar-fill" style="width:82%;background:var(--safe)"></div></div></div>
+            <div class="sbar-row"><div class="sbar-lbl">Movimento</div><div class="sbar-bg"><div class="sbar-fill" style="width:78%;background:var(--safe)"></div></div></div>
+            <div class="sbar-row"><div class="sbar-lbl">Segurança</div><div class="sbar-bg"><div class="sbar-fill" style="width:88%;background:var(--safe)"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="post-body">
+        <div class="post-place-name" onclick="openPlace('parque')">Parque Ramiro Ruediger</div>
+        <div class="post-addr">Centro · Blumenau · 320m de você</div>
+        <div class="post-comment"><span class="ctx">À noite, sozinha.</span> Estava bem iluminado na pista principal. O lago fica mais escuro — fiquei na pista central só.</div>
+        <div class="post-chips">
+          <div class="chip good">💡 Iluminação boa</div>
+          <div class="chip good">👥 Movimentado</div>
+          <div class="chip mid">🌑 Lago escuro</div>
+        </div>
+        <div class="post-actions">
+          <button class="post-act" onclick="openPlace('parque')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            Ver local
+          </button>
+          <div class="post-act-divider"></div>
+          <button class="post-act" onclick="go('rota')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
+            Rota
+          </button>
+          <div class="post-act-divider"></div>
+          <button class="post-act" onclick="go('avaliar')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            Avaliar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post 2 -->
+    <div class="post">
+      <div class="post-header">
+        <div class="post-avatar" style="background:#FDF0DC">🧑</div>
+        <div class="post-info">
+          <div class="post-name">Carla Mendes</div>
+          <div class="post-meta">avaliou um local · há 5h</div>
+        </div>
+        <div class="post-badge bw"><div class="dot"></div>Atenção</div>
+      </div>
+      <div class="post-img" onclick="openPlace('metro')" style="background:linear-gradient(160deg,#E8DCC8,#D4C4A8)">
+        <div class="post-img-icon">🚇</div>
+        <div class="post-type-tag">🚇 Transporte</div>
+        <div class="post-time-tag">Noite · 23h</div>
+        <div class="post-score-pill">
+          <div class="score-num" style="color:var(--warn)">51</div>
+          <div class="score-bars">
+            <div class="sbar-row"><div class="sbar-lbl">Iluminação</div><div class="sbar-bg"><div class="sbar-fill" style="width:52%;background:var(--warn)"></div></div></div>
+            <div class="sbar-row"><div class="sbar-lbl">Movimento</div><div class="sbar-bg"><div class="sbar-fill" style="width:45%;background:var(--warn)"></div></div></div>
+            <div class="sbar-row"><div class="sbar-lbl">Segurança</div><div class="sbar-bg"><div class="sbar-fill" style="width:55%;background:var(--warn)"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="post-body">
+        <div class="post-place-name" onclick="openPlace('metro')">Terminal Centro</div>
+        <div class="post-addr">Centro · Blumenau · 680m de você</div>
+        <div class="post-comment"><span class="ctx">À noite, saída do trabalho.</span> A área da plataforma tem câmera mas a saída lateral fica bem escura e vazia depois das 22h.</div>
+        <div class="post-chips">
+          <div class="chip good">📹 Câmeras ativas</div>
+          <div class="chip bad">🌑 Saída lateral escura</div>
+          <div class="chip mid">👥 Pouco movimento</div>
+        </div>
+        <div class="post-actions">
+          <button class="post-act" onclick="openPlace('metro')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            Ver local
+          </button>
+          <div class="post-act-divider"></div>
+          <button class="post-act" onclick="go('rota')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
+            Rota
+          </button>
+          <div class="post-act-divider"></div>
+          <button class="post-act" onclick="go('avaliar')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            Avaliar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post 3 -->
+    <div class="post">
+      <div class="post-header">
+        <div class="post-avatar" style="background:#FBEAE8">👩</div>
+        <div class="post-info">
+          <div class="post-name">Renata S.</div>
+          <div class="post-meta">avaliou um local · ontem</div>
+        </div>
+        <div class="post-badge br"><div class="dot"></div>Risco alto</div>
+      </div>
+      <div class="post-img" onclick="openPlace('viela')" style="background:linear-gradient(160deg,#D8C8C8,#C4B0B0)">
+        <div class="post-img-icon">🛣️</div>
+        <div class="post-type-tag">🛣️ Espaço público</div>
+        <div class="post-time-tag">Noite · 22h30</div>
+        <div class="post-score-pill">
+          <div class="score-num" style="color:var(--risk)">22</div>
+          <div class="score-bars">
+            <div class="sbar-row"><div class="sbar-lbl">Iluminação</div><div class="sbar-bg"><div class="sbar-fill" style="width:20%;background:var(--risk)"></div></div></div>
+            <div class="sbar-row"><div class="sbar-lbl">Movimento</div><div class="sbar-bg"><div class="sbar-fill" style="width:15%;background:var(--risk)"></div></div></div>
+            <div class="sbar-row"><div class="sbar-lbl">Segurança</div><div class="sbar-bg"><div class="sbar-fill" style="width:28%;background:var(--risk)"></div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="post-body">
+        <div class="post-place-name" onclick="openPlace('viela')">Viela Rua Sul</div>
+        <div class="post-addr">Pinheiros · Blumenau · 1,4km</div>
+        <div class="post-comment"><span class="ctx">Noite, voltando do trabalho.</span> Completamente escura, sem movimento. Prefiro dar a volta de 10 min a mais pela rua principal.</div>
+        <div class="post-chips">
+          <div class="chip bad">🌑 Sem iluminação</div>
+          <div class="chip bad">👤 Vazia</div>
+          <div class="chip bad">⚠️ Relatos recentes</div>
+        </div>
+        <div class="post-actions">
+          <button class="post-act" onclick="openPlace('viela')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            Ver local
+          </button>
+          <div class="post-act-divider"></div>
+          <button class="post-act" onclick="go('rota')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
+            Rota
+          </button>
+          <div class="post-act-divider"></div>
+          <button class="post-act" onclick="go('avaliar')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
+            Avaliar
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="gap24"></div>
+  </div>
+
+  <div class="bnav">
+    <button class="ni on" onclick="go('feed')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Feed
+    </button>
+    <button class="ni" onclick="go('explorar')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Explorar
+    </button>
+    <button class="ni" onclick="go('avaliar')" style="position:relative">
+      <div style="width:52px;height:52px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;top:-26px;box-shadow:0 4px 16px rgba(61,107,94,.4);border:3px solid var(--cream)">
+        <svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+      </div>
+      <div style="height:14px"></div>
+      Avaliar
+    </button>
+    <button class="ni" onclick="go('rota')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>
+      Rota
+    </button>
+    <button class="ni" onclick="go('perfil')">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      Perfil
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     DETALHE DO LOCAL
+══════════════════════════════════════════════ -->
+<div class="screen" id="s-detalhe">
+  <div class="d-header" id="d-header">
+    <div class="d-header-icon" id="d-icon">🌳</div>
+    <button class="d-back" onclick="back()">←</button>
+    <button class="d-share-btn" onclick="showToast('Link copiado!')">
+      <svg width="18" height="18" fill="none" stroke="var(--t)" stroke-width="1.8" viewBox="0 0 24 24"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+    </button>
+  </div>
+  <div class="scroll">
+    <div class="d-card">
+      <div class="d-card-top">
+        <div class="d-type-row">
+          <div class="d-type-pill" id="d-type-pill">🌳 Parque</div>
+          <div id="d-badge" class="post-badge bs" style="font-size:12px;padding:4px 10px"><div class="dot"></div>Seguro</div>
+        </div>
+        <div class="d-name" id="d-name">Parque Ramiro Ruediger</div>
+        <div class="d-addr" id="d-addr">Centro · Blumenau</div>
+
+        <!-- Score box -->
+        <div class="d-score-box">
+          <div class="d-time-tabs">
+            <button class="d-tab on" onclick="setDTime(this,'manha')">Manhã</button>
+            <button class="d-tab" onclick="setDTime(this,'tarde')">Tarde</button>
+            <button class="d-tab" onclick="setDTime(this,'noite')">Noite</button>
+          </div>
+          <div class="d-score-top">
+            <div class="d-score-num" id="d-score-num">84</div>
+            <div class="d-score-right">
+              <div class="d-score-label" id="d-score-label">Seguro</div>
+              <div class="d-score-sub" id="d-score-sub">Baseado em 47 avaliações recentes</div>
+            </div>
+          </div>
+          <div class="d-bars" id="d-bars">
+            <div class="d-bar-row"><div class="d-bar-label">Iluminação</div><div class="d-bar-bg"><div class="d-bar-fill" style="width:82%;background:var(--safe)"></div></div><div class="d-bar-val">82</div></div>
+            <div class="d-bar-row"><div class="d-bar-label">Movimento</div><div class="d-bar-bg"><div class="d-bar-fill" style="width:78%;background:var(--safe)"></div></div><div class="d-bar-val">78</div></div>
+            <div class="d-bar-row"><div class="d-bar-label">Segurança</div><div class="d-bar-bg"><div class="d-bar-fill" style="width:88%;background:var(--safe)"></div></div><div class="d-bar-val">88</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fatores principais -->
+      <div style="padding:0 20px;margin-bottom:4px">
+        <div class="d-sec-title" style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:12px">Fatores principais</div>
+      </div>
+      <div class="d-reasons" id="d-reasons">
+        <div class="d-reason"><div class="d-reason-icon">💡</div><div class="d-reason-text"><strong>Boa iluminação</strong> na pista principal e entradas</div></div>
+        <div class="d-reason"><div class="d-reason-icon">👥</div><div class="d-reason-text"><strong>Alto movimento</strong> de pessoas até 22h</div></div>
+        <div class="d-reason"><div class="d-reason-icon">🚔</div><div class="d-reason-text"><strong>Ronda policial</strong> frequente nos fins de semana</div></div>
+        <div class="d-reason"><div class="d-reason-icon">⚠️</div><div class="d-reason-text">Área do lago com <strong>iluminação parcial</strong> — prefira a pista central</div></div>
+      </div>
+
+      <!-- Avaliações estruturadas agregadas -->
+      <div style="padding:16px 20px 0">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:12px">Avaliações estruturadas</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
+          <div style="background:var(--safebg);border-radius:var(--rs);padding:12px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:var(--safe)">88%</div>
+            <div style="font-size:11px;color:var(--safe);margin-top:2px">se sentiram seguras</div>
+          </div>
+          <div style="background:var(--cream);border-radius:var(--rs);padding:12px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:var(--t)">47</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">avaliações · último mês</div>
+          </div>
+          <div style="background:var(--cream);border-radius:var(--rs);padding:12px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:var(--t)">3</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px">relatos de assédio</div>
+          </div>
+          <div style="background:var(--safebg);border-radius:var(--rs);padding:12px;text-align:center">
+            <div style="font-size:22px;font-weight:700;color:var(--safe)">dia</div>
+            <div style="font-size:11px;color:var(--safe);margin-top:2px">melhor horário</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Galeria de fotos -->
+      <div style="padding:0 20px 4px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3)">Fotos da comunidade</div>
+        <div style="font-size:12px;color:var(--t3)" id="fotos-count">3 fotos</div>
+      </div>
+      <div class="foto-galeria" id="fotos-galeria">
+        <div class="foto-thumb-placeholder" style="background:linear-gradient(135deg,#D4E6E0,#BDD4CB)" onclick="openLightbox('mock1')">🌳</div>
+        <div class="foto-thumb-placeholder" style="background:linear-gradient(135deg,#C8D8D4,#B0C8C0)" onclick="openLightbox('mock2')">💡</div>
+        <div class="foto-thumb-placeholder" style="background:linear-gradient(135deg,#D8E4E0,#C4D4D0)" onclick="openLightbox('mock3')">🛤️</div>
+      </div>
+
+      <!-- Comentários contextualizados -->
+      <div class="d-comments">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:12px">Comentários</div>
+        <div class="d-disclaimer">Os comentários são complemento — os dados estruturados acima são a base do score.</div>
+        <div class="gap8"></div>
+        <div class="d-comment">
+          <div class="d-comment-top">
+            <div class="d-comment-avatar">A</div>
+            <div class="d-comment-meta">
+              <div class="d-comment-name">Ana Luíza</div>
+              <div class="d-comment-ctx">Noite · sozinha · há 2 dias</div>
+            </div>
+            <div class="post-badge bs" style="font-size:10px;padding:3px 8px"><div class="dot"></div>Seguro</div>
+          </div>
+          <div class="d-comment-text">Fui ontem à noite, estava bem movimentado e iluminado na pista central. Me senti segura durante todo o tempo.</div>
+          <div class="d-comment-chips">
+            <div class="chip good">💡 Iluminada</div>
+            <div class="chip good">👥 Movimentado</div>
+            <div class="chip mid">⚠️ Lago isolado</div>
+          </div>
+        </div>
+        <div class="d-comment">
+          <div class="d-comment-top">
+            <div class="d-comment-avatar" style="background:linear-gradient(135deg,#8B5E6B,#B8849A)">C</div>
+            <div class="d-comment-meta">
+              <div class="d-comment-name">Carla M.</div>
+              <div class="d-comment-ctx">Tarde · com amigas · há 5 dias</div>
+            </div>
+            <div class="post-badge bs" style="font-size:10px;padding:3px 8px"><div class="dot"></div>Seguro</div>
+          </div>
+          <div class="d-comment-text">De tarde é ótimo, cheio de família e corredoras. Nunca tive problema aqui durante o dia.</div>
+          <div class="d-comment-chips">
+            <div class="chip good">☀️ Ótimo de dia</div>
+            <div class="chip good">👨‍👩‍👧 Famílias</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTAs -->
+      <div class="d-ctas">
+        <button class="btn btn-p btn-full" onclick="go('rota')">📍 Compartilhar rota até aqui</button>
+        <button class="btn btn-s btn-full" onclick="go('avaliar')">⭐ Avaliar este local</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     EXPLORAR
+══════════════════════════════════════════════ -->
+<div class="screen" id="s-explorar">
+  <div class="topbar">
+    <button style="background:none;border:none;cursor:pointer;font-size:20px;padding:4px;margin-right:4px" onclick="back()">←</button>
+    <span class="logo" style="font-size:20px">Explorar</span>
+  </div>
+  <div class="scroll">
+    <div style="padding:12px 16px 0">
+      <div style="display:flex;align-items:center;gap:10px;background:#fff;border:.5px solid var(--bd2);border-radius:var(--rx);padding:11px 14px;margin-bottom:14px">
+        <svg width="18" height="18" fill="none" stroke="var(--t3)" stroke-width="1.6" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input style="border:none;outline:none;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--t);background:transparent;flex:1" placeholder="Buscar local ou bairro…" type="text">
+      </div>
+      <!-- tipo -->
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:8px">Tipo</div>
+      <div style="display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px">
+        <button class="d-tab on" onclick="selTab(this)">Todos</button>
+        <button class="d-tab" onclick="selTab(this)">🍺 Bares</button>
+        <button class="d-tab" onclick="selTab(this)">🌳 Parques</button>
+        <button class="d-tab" onclick="selTab(this)">🚇 Transporte</button>
+        <button class="d-tab" onclick="selTab(this)">🛍️ Comércio</button>
+      </div>
+      <!-- horário -->
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:8px">Horário</div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button class="d-tab on" onclick="selTab(this)">Agora</button>
+        <button class="d-tab" onclick="selTab(this)">Manhã</button>
+        <button class="d-tab" onclick="selTab(this)">Tarde</button>
+        <button class="d-tab" onclick="selTab(this)">Noite</button>
+      </div>
+    </div>
+
+    <!-- lista de locais -->
+    <div style="display:flex;flex-direction:column;gap:10px;padding:0 16px 24px">
+      <div class="post" style="margin:0;cursor:pointer" onclick="openPlace('parque')">
+        <div class="post-header">
+          <div class="post-avatar">🌳</div>
+          <div class="post-info"><div class="post-name">Parque Ramiro Ruediger</div><div class="post-meta">Centro · 320m · 47 avaliações</div></div>
+          <div class="post-badge bs" style="font-size:11px"><div class="dot"></div>Seguro</div>
+        </div>
+        <div style="padding:0 14px 12px;display:flex;gap:6px;flex-wrap:wrap">
+          <div class="chip good">💡 Iluminado</div><div class="chip good">👥 Movimentado</div><div class="chip">🌳 Parque</div>
+        </div>
+      </div>
+      <div class="post" style="margin:0;cursor:pointer" onclick="openPlace('shopping')">
+        <div class="post-header">
+          <div class="post-avatar" style="background:#E8F2EE">🛍️</div>
+          <div class="post-info"><div class="post-name">Neumarkt Shopping</div><div class="post-meta">Garcia · 1,2km · 82 avaliações</div></div>
+          <div class="post-badge bs" style="font-size:11px"><div class="dot"></div>Seguro</div>
+        </div>
+        <div style="padding:0 14px 12px;display:flex;gap:6px;flex-wrap:wrap">
+          <div class="chip good">🛡️ Segurança</div><div class="chip good">💡 Iluminado</div><div class="chip">🛍️ Comércio</div>
+        </div>
+      </div>
+      <div class="post" style="margin:0;cursor:pointer" onclick="openPlace('metro')">
+        <div class="post-header">
+          <div class="post-avatar" style="background:#FDF0DC">🚇</div>
+          <div class="post-info"><div class="post-name">Terminal Centro</div><div class="post-meta">Centro · 680m · 31 avaliações</div></div>
+          <div class="post-badge bw" style="font-size:11px"><div class="dot"></div>Atenção</div>
+        </div>
+        <div style="padding:0 14px 12px;display:flex;gap:6px;flex-wrap:wrap">
+          <div class="chip mid">🌑 Noite escura</div><div class="chip mid">👥 Pouco mov.</div><div class="chip">🚇 Transporte</div>
+        </div>
+      </div>
+      <div class="post" style="margin:0;cursor:pointer" onclick="openPlace('bar')">
+        <div class="post-header">
+          <div class="post-avatar" style="background:#FDF0DC">🍺</div>
+          <div class="post-info"><div class="post-name">Bar do Largo</div><div class="post-meta">Vila Nova · 900m · 19 avaliações</div></div>
+          <div class="post-badge bw" style="font-size:11px"><div class="dot"></div>Atenção</div>
+        </div>
+        <div style="padding:0 14px 12px;display:flex;gap:6px;flex-wrap:wrap">
+          <div class="chip mid">⚠️ Calçada escura</div><div class="chip good">👥 Movimentado</div><div class="chip">🍺 Bar</div>
+        </div>
+      </div>
+      <div class="post" style="margin:0;cursor:pointer" onclick="openPlace('viela')">
+        <div class="post-header">
+          <div class="post-avatar" style="background:#FBEAE8">🛣️</div>
+          <div class="post-info"><div class="post-name">Viela Rua Sul</div><div class="post-meta">Pinheiros · 1,4km · 8 avaliações</div></div>
+          <div class="post-badge br" style="font-size:11px"><div class="dot"></div>Risco alto</div>
+        </div>
+        <div style="padding:0 14px 12px;display:flex;gap:6px;flex-wrap:wrap">
+          <div class="chip bad">🌑 Sem luz</div><div class="chip bad">👤 Vazia</div><div class="chip">🛣️ Espaço público</div>
+        </div>
+      </div>
+      <div class="post" style="margin:0;cursor:pointer" onclick="openPlace('vilagermanica')">
+        <div class="post-header">
+          <div class="post-avatar" style="background:#EAF2EF">🎪</div>
+          <div class="post-info"><div class="post-name">Parque Vila Germânica</div><div class="post-meta">Velha · 2,1km · 47 avaliações</div></div>
+          <div class="post-badge bs" style="font-size:11px"><div class="dot"></div>Seguro</div>
+        </div>
+        <div style="padding:0 14px 12px;display:flex;gap:6px;flex-wrap:wrap">
+          <div class="chip good">💡 Bem iluminado</div><div class="chip good">👥 Movimentado</div><div class="chip">🎪 Parque/Eventos</div>
+        </div>
+      </div>
+      <div class="post" style="margin:0;cursor:pointer" onclick="openPlace('rua15')">
+        <div class="post-header">
+          <div class="post-avatar" style="background:#EAF2EF">🛍️</div>
+          <div class="post-info"><div class="post-name">Rua XV de Novembro</div><div class="post-meta">Centro · 0,8km · 62 avaliações</div></div>
+          <div class="post-badge bs" style="font-size:11px"><div class="dot"></div>Seguro</div>
+        </div>
+        <div style="padding:0 14px 12px;display:flex;gap:6px;flex-wrap:wrap">
+          <div class="chip good">📹 Monitorada</div><div class="chip good">👥 Alto fluxo</div><div class="chip">🛍️ Comércio</div>
+        </div>
+      </div>
+      <div class="post" style="margin:0;cursor:pointer" onclick="openPlace('teatrocarlosgomes')">
+        <div class="post-header">
+          <div class="post-avatar" style="background:#EAF2EF">🎭</div>
+          <div class="post-info"><div class="post-name">Teatro Carlos Gomes</div><div class="post-meta">Centro · 1,0km · 24 avaliações</div></div>
+          <div class="post-badge bs" style="font-size:11px"><div class="dot"></div>Seguro</div>
+        </div>
+        <div style="padding:0 14px 12px;display:flex;gap:6px;flex-wrap:wrap">
+          <div class="chip good">💡 Praça iluminada</div><div class="chip good">🛡️ Segurança</div><div class="chip">🎭 Cultural</div>
+        </div>
+      </div>
+      <div class="post" style="margin:0;cursor:pointer" onclick="openPlace('catedral')">
+        <div class="post-header">
+          <div class="post-avatar" style="background:#EAF2EF">⛪</div>
+          <div class="post-info"><div class="post-name">Catedral São Paulo Apóstolo</div><div class="post-meta">Centro · 0,9km · 33 avaliações</div></div>
+          <div class="post-badge bs" style="font-size:11px"><div class="dot"></div>Seguro</div>
+        </div>
+        <div style="padding:0 14px 12px;display:flex;gap:6px;flex-wrap:wrap">
+          <div class="chip good">👥 Movimentado</div><div class="chip good">📹 Monitorada</div><div class="chip">⛪ Espaço público</div>
+        </div>
+      </div>
+      <div class="post" style="margin:0;cursor:pointer" onclick="openPlace('spitzkopf')">
+        <div class="post-header">
+          <div class="post-avatar" style="background:#FDF0DC">🌲</div>
+          <div class="post-info"><div class="post-name">Parque Ecológico Spitzkopf</div><div class="post-meta">Área rural · 16km · 18 avaliações</div></div>
+          <div class="post-badge bw" style="font-size:11px"><div class="dot"></div>Atenção</div>
+        </div>
+        <div style="padding:0 14px 12px;display:flex;gap:6px;flex-wrap:wrap">
+          <div class="chip mid">⚠️ Ir acompanhada</div><div class="chip mid">🌑 Sem luz à noite</div><div class="chip">🌲 Parque natural</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button class="ni" onclick="go('feed')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Feed</button>
+    <button class="ni on" onclick="go('explorar')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</button>
+    <button class="ni" onclick="go('avaliar')" style="position:relative"><div style="width:52px;height:52px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;top:-26px;box-shadow:0 4px 16px rgba(61,107,94,.4);border:3px solid var(--cream)"><svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div style="height:14px"></div>Avaliar</button>
+    <button class="ni" onclick="go('rota')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>Rota</button>
+    <button class="ni" onclick="go('perfil')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     AVALIAR (stepper)
+══════════════════════════════════════════════ -->
+<div class="screen" id="s-avaliar">
+  <div class="topbar">
+    <button style="background:none;border:none;cursor:pointer;font-size:20px;padding:4px;margin-right:4px" onclick="back()">←</button>
+    <span class="logo" style="font-size:20px">Avaliar local</span>
+    <div style="font-size:13px;color:var(--t3)" id="eval-step-counter">1 / 7</div>
+  </div>
+  <div class="eval-progress"><div class="eval-prog-fill" id="eval-fill" style="width:20%"></div></div>
+  <div class="scroll">
+    <div class="pad">
+      <!-- Step 1: Escolher local -->
+      <div class="eval-step on" id="est-1">
+        <div class="eval-step-num">Passo 1 de 7</div>
+        <div class="eval-q">Qual local você quer <em>avaliar?</em></div>
+        <div class="eval-opts">
+          <button class="eval-opt" onclick="selectEval(this,1)"><div class="eval-opt-icon">🌳</div><div class="eval-opt-text"><div class="eval-opt-title">Parque Ramiro Ruediger</div><div class="eval-opt-sub">Centro · Parque</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,1)"><div class="eval-opt-icon">🚇</div><div class="eval-opt-text"><div class="eval-opt-title">Terminal Centro</div><div class="eval-opt-sub">Centro · Transporte</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,1)"><div class="eval-opt-icon">🍺</div><div class="eval-opt-text"><div class="eval-opt-title">Bar do Largo</div><div class="eval-opt-sub">Vila Nova · Bar</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,1)"><div class="eval-opt-icon">🎪</div><div class="eval-opt-text"><div class="eval-opt-title">Parque Vila Germânica</div><div class="eval-opt-sub">Velha · Parque/Eventos</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,1)"><div class="eval-opt-icon">🛍️</div><div class="eval-opt-text"><div class="eval-opt-title">Rua XV de Novembro</div><div class="eval-opt-sub">Centro · Espaço público</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,1)"><div class="eval-opt-icon">🎭</div><div class="eval-opt-text"><div class="eval-opt-title">Teatro Carlos Gomes</div><div class="eval-opt-sub">Centro · Equipamento cultural</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,1)"><div class="eval-opt-icon">⛪</div><div class="eval-opt-text"><div class="eval-opt-title">Catedral São Paulo Apóstolo</div><div class="eval-opt-sub">Centro · Espaço público</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,1)"><div class="eval-opt-icon">🌲</div><div class="eval-opt-text"><div class="eval-opt-title">Parque Ecológico Spitzkopf</div><div class="eval-opt-sub">Área rural · Parque natural</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,1)"><div class="eval-opt-icon">🔍</div><div class="eval-opt-text"><div class="eval-opt-title">Outro local…</div><div class="eval-opt-sub">Buscar na lista completa</div></div></button>
+        </div>
+      </div>
+      <!-- Step 2: Contexto -->
+      <div class="eval-step" id="est-2">
+        <div class="eval-step-num">Passo 2 de 7</div>
+        <div class="eval-q">Como era o <em>contexto</em> da sua visita?</div>
+        <div class="eval-opts">
+          <button class="eval-opt" onclick="selectEval(this,2)"><div class="eval-opt-icon">🌙</div><div class="eval-opt-text"><div class="eval-opt-title">À noite · sozinha</div><div class="eval-opt-sub">Situação de maior risco percebido</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,2)"><div class="eval-opt-icon">🌙</div><div class="eval-opt-text"><div class="eval-opt-title">À noite · com amigas</div><div class="eval-opt-sub">Em grupo feminino</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,2)"><div class="eval-opt-icon">☀️</div><div class="eval-opt-text"><div class="eval-opt-title">De dia · sozinha</div><div class="eval-opt-sub">Durante o horário diurno</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,2)"><div class="eval-opt-icon">☀️</div><div class="eval-opt-text"><div class="eval-opt-title">De dia · com amigas</div><div class="eval-opt-sub">Grupo durante o dia</div></div></button>
+        </div>
+      </div>
+      <!-- Step 3: Iluminação -->
+      <div class="eval-step" id="est-3">
+        <div class="eval-step-num">Passo 3 de 7</div>
+        <div class="eval-q">Como estava a <em>iluminação?</em></div>
+        <div class="eval-opts">
+          <button class="eval-opt" onclick="selectEval(this,3,'s')"><div class="eval-opt-icon">💡</div><div class="eval-opt-text"><div class="eval-opt-title">Boa iluminação</div><div class="eval-opt-sub">Claro, bem visível em todo o espaço</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,3,'w')"><div class="eval-opt-icon">🔆</div><div class="eval-opt-text"><div class="eval-opt-title">Iluminação média</div><div class="eval-opt-sub">Algumas áreas mais escuras</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,3,'r')"><div class="eval-opt-icon">🌑</div><div class="eval-opt-text"><div class="eval-opt-title">Pouca ou nenhuma</div><div class="eval-opt-sub">Escuro, difícil de ver ao redor</div></div></button>
+        </div>
+      </div>
+      <!-- Step 4: Movimento -->
+      <div class="eval-step" id="est-4">
+        <div class="eval-step-num">Passo 4 de 7</div>
+        <div class="eval-q">Tinha <em>movimento</em> de pessoas?</div>
+        <div class="eval-opts">
+          <button class="eval-opt" onclick="selectEval(this,4,'s')"><div class="eval-opt-icon">👥</div><div class="eval-opt-text"><div class="eval-opt-title">Alto movimento</div><div class="eval-opt-sub">Muitas pessoas, espaço animado</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,4,'w')"><div class="eval-opt-icon">🚶</div><div class="eval-opt-text"><div class="eval-opt-title">Movimento médio</div><div class="eval-opt-sub">Algumas pessoas, não vazio</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,4,'r')"><div class="eval-opt-icon">👤</div><div class="eval-opt-text"><div class="eval-opt-title">Pouco ou vazio</div><div class="eval-opt-sub">Isolado, poucas ou nenhuma pessoa</div></div></button>
+        </div>
+      </div>
+      <!-- Step 5: Pontos de apoio observados -->
+      <div class="eval-step" id="est-5">
+        <div class="eval-step-num">Passo 5 de 7</div>
+        <div class="eval-q">O que você <em>observou</em> no local?</div>
+        <div style="font-size:13px;color:var(--t3);margin-bottom:14px;margin-top:-12px">Selecione tudo que estava presente</div>
+        <div class="ocorr-chips-wrap" id="pontos-chips">
+          <button class="ocorr-chip" onclick="toggleChip(this)">🚔 Policiamento</button>
+          <button class="ocorr-chip" onclick="toggleChip(this)">🏪 Comércio aberto</button>
+          <button class="ocorr-chip" onclick="toggleChip(this)">🛡️ Segurança privada</button>
+          <button class="ocorr-chip" onclick="toggleChip(this)">📹 Câmeras visíveis</button>
+          <button class="ocorr-chip" onclick="toggleChip(this)">🚪 Porteiro/zelador</button>
+          <button class="ocorr-chip" onclick="toggleChip(this)">🚑 UPA/Farmácia próxima</button>
+          <button class="ocorr-chip" onclick="toggleChip(this)">💡 Iluminação pública boa</button>
+          <button class="ocorr-chip" onclick="toggleChip(this)">🌑 Trechos sem luz</button>
+          <button class="ocorr-chip" onclick="toggleChip(this)">👥 Muito movimento</button>
+          <button class="ocorr-chip" onclick="toggleChip(this)">👤 Local isolado</button>
+        </div>
+        <div style="margin-top:16px">
+          <button class="btn btn-s btn-full" onclick="evalNext()">Continuar →</button>
+        </div>
+      </div>
+      <!-- Step 6: Ocorrência de assédio/incidente -->
+      <div class="eval-step" id="est-6">
+        <div class="eval-step-num">Passo 6 de 7</div>
+        <div class="eval-q">Aconteceu alguma <em>ocorrência</em> nesta visita?</div>
+        <div style="font-size:13px;color:var(--t3);margin-bottom:14px;margin-top:-12px">Seus dados são 100% anonimizados</div>
+        <div class="eval-opts">
+          <button class="eval-opt" onclick="selectOcorrencia(this,'nenhuma')"><div class="eval-opt-icon">✅</div><div class="eval-opt-text"><div class="eval-opt-title">Nenhuma ocorrência</div><div class="eval-opt-sub">Tudo tranquilo durante a visita</div></div></button>
+          <button class="eval-opt" onclick="selectOcorrencia(this,'assedio-verbal')"><div class="eval-opt-icon">🗣️</div><div class="eval-opt-text"><div class="eval-opt-title">Assédio verbal</div><div class="eval-opt-sub">Comentário, cantada ou xingamento</div></div></button>
+          <button class="eval-opt" onclick="selectOcorrencia(this,'seguimento')"><div class="eval-opt-icon">👣</div><div class="eval-opt-text"><div class="eval-opt-title">Seguimento</div><div class="eval-opt-sub">Fui seguida por uma ou mais pessoas</div></div></button>
+          <button class="eval-opt" onclick="selectOcorrencia(this,'assedio-fisico')"><div class="eval-opt-icon">🚨</div><div class="eval-opt-text"><div class="eval-opt-title">Assédio físico</div><div class="eval-opt-sub">Toque ou aproximação forçada</div></div></button>
+          <button class="eval-opt" onclick="selectOcorrencia(this,'furto')"><div class="eval-opt-icon">👜</div><div class="eval-opt-text"><div class="eval-opt-title">Tentativa de furto</div><div class="eval-opt-sub">Tentaram levar meus pertences</div></div></button>
+          <button class="eval-opt" onclick="selectOcorrencia(this,'outro')"><div class="eval-opt-icon">⚠️</div><div class="eval-opt-text"><div class="eval-opt-title">Outra situação</div><div class="eval-opt-sub">Algo que me deixou desconfortável</div></div></button>
+        </div>
+      </div>
+      <!-- Step 7: Sensação geral + comentário -->
+      <div class="eval-step" id="est-7">
+        <div class="eval-step-num">Passo 7 de 7</div>
+        <div class="eval-q">Qual sua <em>sensação geral?</em></div>
+        <div class="eval-opts" style="margin-bottom:20px">
+          <button class="eval-opt" onclick="selectEval(this,7,'s')"><div class="eval-opt-icon">✅</div><div class="eval-opt-text"><div class="eval-opt-title">Me senti segura</div><div class="eval-opt-sub">Sem situações preocupantes</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,7,'w')"><div class="eval-opt-icon">🟡</div><div class="eval-opt-text"><div class="eval-opt-title">Fiquei atenta</div><div class="eval-opt-sub">Nada aconteceu mas fiquei vigilante</div></div></button>
+          <button class="eval-opt" onclick="selectEval(this,7,'r')"><div class="eval-opt-icon">🔴</div><div class="eval-opt-text"><div class="eval-opt-title">Me senti insegura</div><div class="eval-opt-sub">Houve situação que me incomodou</div></div></button>
+        </div>
+        <div class="field-label">Comentário (opcional · máx. 200 caracteres)</div>
+        <textarea class="field-input" rows="3" maxlength="200" placeholder="Ex: Fui à noite e o estacionamento estava bem escuro perto da saída lateral…" style="resize:none"></textarea>
+        <div style="font-size:11px;color:var(--t3);margin-top:4px;text-align:right;margin-bottom:16px">Seus dados são anonimizados</div>
+
+        <div class="field-label">Fotos (opcional · máx. 3)</div>
+        <div class="foto-upload-area" id="foto-upload-area" onclick="document.getElementById('foto-input').click()">
+          <input type="file" id="foto-input" accept="image/*" multiple style="display:none" onchange="handleFotoUpload(event)">
+          <div style="font-size:28px;margin-bottom:6px">📷</div>
+          <div style="font-size:14px;font-weight:600;color:var(--t2)">Adicionar fotos do local</div>
+          <div style="font-size:12px;color:var(--t3);margin-top:2px">Ajuda outras mulheres a conhecer o espaço</div>
+        </div>
+        <div class="foto-preview-wrap" id="foto-preview-wrap"></div>
+      </div>
+    </div>
+  </div>
+  <div class="eval-nav">
+    <button class="btn btn-s" style="flex:1" onclick="evalBack()" id="eval-back-btn" style="display:none">← Voltar</button>
+    <button class="btn btn-p" style="flex:2" id="eval-next-btn" onclick="evalNext()">Continuar →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ROTA
+══════════════════════════════════════════════ -->
+<div class="screen" id="s-rota">
+  <div class="topbar">
+    <button style="background:none;border:none;cursor:pointer;font-size:20px;padding:4px;margin-right:4px" onclick="back()">←</button>
+    <span class="logo" style="font-size:20px">Compartilhar rota</span>
+  </div>
+  <div class="rota-map">
+    <div class="you-dot" style="left:30%;top:50%"></div>
+    <svg style="position:absolute;inset:0;width:100%;height:100%" viewBox="0 0 420 180" fill="none">
+      <path d="M126 90 Q200 50 294 90" stroke="#3D6B5E" stroke-width="2.5" stroke-dasharray="7 5" stroke-linecap="round"/>
+    </svg>
+    <div style="position:absolute;right:28%;top:38%;width:16px;height:16px;background:var(--safe);border-radius:50%;border:2.5px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2)"></div>
+    <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:600;background:rgba(255,255,255,.92);backdrop-filter:blur(6px);padding:5px 14px;border-radius:20px;color:var(--t);white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.1)">Parque Ramiro · ~8 min a pé</div>
+  </div>
+  <div class="scroll">
+    <div class="pad" style="padding-top:16px">
+      <!-- compartilhamento ativo -->
+      <div class="sharing-pill" id="sharing-pill" style="display:none">
+        <div class="pulse"></div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600;color:var(--safe)" id="sharing-name-label">Mãe</div><div style="font-size:12px;color:var(--t3)">acompanhando sua rota em tempo real</div></div>
+        <button onclick="stopSharing()" style="background:none;border:.5px solid var(--gm);padding:6px 12px;border-radius:20px;font-size:12px;color:var(--g);cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500">Parar</button>
+      </div>
+
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:4px">Contatos de confiança</div>
+      <div class="contact-row" onclick="startSharing('Mãe 👩')">
+        <div class="c-avatar" style="background:var(--gp);color:var(--g);font-size:22px">👩</div>
+        <div style="flex:1"><div class="contact-name" style="font-size:15px;font-weight:500">Mãe</div><div style="font-size:12px;color:var(--t3)">(47) 99999-0001</div></div>
+        <div style="font-size:13px;font-weight:600;color:var(--g);background:var(--gp);padding:7px 14px;border-radius:20px">Compartilhar</div>
+      </div>
+      <div class="contact-row" onclick="startSharing('Júlia 👯')">
+        <div class="c-avatar" style="background:#FDF0DC;color:var(--warn);font-size:22px">👯</div>
+        <div style="flex:1"><div class="contact-name" style="font-size:15px;font-weight:500">Júlia</div><div style="font-size:12px;color:var(--t3)">(47) 98888-0002</div></div>
+        <div style="font-size:13px;font-weight:600;color:var(--g);background:var(--gp);padding:7px 14px;border-radius:20px">Compartilhar</div>
+      </div>
+      <div class="contact-row" onclick="showToast('Em breve: adicionar contato!')">
+        <div class="c-avatar" style="background:var(--cream);color:var(--t3);font-size:24px;border:.5px dashed var(--bd2)">+</div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:500;color:var(--g)">Adicionar contato</div><div style="font-size:12px;color:var(--t3)">Da sua agenda</div></div>
+      </div>
+
+      <div class="gap16"></div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:10px">Check-in automático</div>
+      <div class="checkin-bar" id="checkin-box">
+        <div class="checkin-timer" id="checkin-timer">05:00</div>
+        <div class="checkin-label">Próximo check-in · toque para confirmar que está bem</div>
+        <button class="checkin-btn" id="checkin-btn" onclick="doCheckin()">✅ Estou bem</button>
+      </div>
+
+      <div class="gap16"></div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:10px">Pontos de apoio próximos</div>
+      <div class="apoio-card" onclick="showToast('Abrindo no mapa…')">
+        <div class="apoio-icon" style="background:#E8F0FE">🏥</div>
+        <div class="apoio-info">
+          <div class="apoio-name">UPA Centro — Blumenau</div>
+          <div class="apoio-dist">📍 1,1km · Rua Amazonas, 40</div>
+        </div>
+        <span class="apoio-open aberto">Aberto 24h</span>
+      </div>
+      <div class="apoio-card" onclick="showToast('Abrindo no mapa…')">
+        <div class="apoio-icon" style="background:#FEF3C7">💊</div>
+        <div class="apoio-info">
+          <div class="apoio-name">Farmácia São João</div>
+          <div class="apoio-dist">📍 0,4km · R. XV de Novembro, 310</div>
+        </div>
+        <span class="apoio-open aberto">Aberto</span>
+      </div>
+      <div class="apoio-card" onclick="showToast('Abrindo no mapa…')">
+        <div class="apoio-icon" style="background:#EDE9FE">🚔</div>
+        <div class="apoio-info">
+          <div class="apoio-name">3ª Delegacia de Polícia</div>
+          <div class="apoio-dist">📍 0,8km · R. Cel. Felippe Schmidt</div>
+        </div>
+        <span class="apoio-open aberto">24h</span>
+      </div>
+      <div class="apoio-card" onclick="showToast('Abrindo no mapa…')">
+        <div class="apoio-icon" style="background:#FCE7F3">💜</div>
+        <div class="apoio-info">
+          <div class="apoio-name">CRAM — Centro de Ref. da Mulher</div>
+          <div class="apoio-dist">📍 1,4km · R. Caetano Deeke, 525</div>
+        </div>
+        <span class="apoio-open fechado">Fecha 18h</span>
+      </div>
+
+      <div class="gap16"></div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:12px">Opções de rota</div>
+      <div class="post" style="margin:0;margin-bottom:10px">
+        <div style="padding:14px 16px;display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;background:var(--safebg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🔒</div>
+          <div style="flex:1"><div style="font-size:15px;font-weight:600">Rota mais segura</div><div style="font-size:12px;color:var(--t3)">+3 min · Evita a Viela Sul</div></div>
+          <div style="font-size:12px;font-weight:600;color:var(--safe);background:var(--safebg);padding:5px 10px;border-radius:20px">Seguro</div>
+        </div>
+      </div>
+      <div class="post" style="margin:0">
+        <div style="padding:14px 16px;display:flex;align-items:center;gap:12px">
+          <div style="width:40px;height:40px;background:var(--warnbg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">⚡</div>
+          <div style="flex:1"><div style="font-size:15px;font-weight:600">Rota mais rápida</div><div style="font-size:12px;color:var(--t3)">8 min · Atenção na Rua Frei Caneca</div></div>
+          <div style="font-size:12px;font-weight:600;color:var(--warn);background:var(--warnbg);padding:5px 10px;border-radius:20px">Atenção</div>
+        </div>
+      </div>
+      <div class="gap24"></div>
+    </div>
+  </div>
+
+  <div class="bnav">
+    <button class="ni" onclick="go('feed')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Feed</button>
+    <button class="ni" onclick="go('explorar')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</button>
+    <button class="ni" onclick="go('avaliar')" style="position:relative"><div style="width:52px;height:52px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;top:-26px;box-shadow:0 4px 16px rgba(61,107,94,.4);border:3px solid var(--cream)"><svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div style="height:14px"></div>Avaliar</button>
+    <button class="ni on" onclick="go('rota')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>Rota</button>
+    <button class="ni" onclick="go('perfil')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PERFIL
+══════════════════════════════════════════════ -->
+<div class="screen" id="s-perfil">
+  <div class="profile-cover">
+    <div class="profile-avatar">👩</div>
+  </div>
+  <div class="scroll">
+    <div class="profile-body">
+      <div style="font-family:'Fraunces',serif;font-size:24px;font-weight:300;margin-bottom:2px">Marina Silva</div>
+      <div style="font-size:13px;color:var(--t3);margin-bottom:20px">Blumenau · membro desde jan/2025</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:24px">
+        <div style="background:#fff;border:.5px solid var(--bd);border-radius:var(--rs);padding:14px 8px;text-align:center;box-shadow:var(--sh)"><div style="font-family:'Fraunces',serif;font-size:24px;font-weight:300;color:var(--g)">12</div><div style="font-size:11px;color:var(--t3);margin-top:2px">Avaliações</div></div>
+        <div style="background:#fff;border:.5px solid var(--bd);border-radius:var(--rs);padding:14px 8px;text-align:center;box-shadow:var(--sh)"><div style="font-family:'Fraunces',serif;font-size:24px;font-weight:300;color:var(--g)">4</div><div style="font-size:11px;color:var(--t3);margin-top:2px">Rotas</div></div>
+        <div style="background:#fff;border:.5px solid var(--bd);border-radius:var(--rs);padding:14px 8px;text-align:center;box-shadow:var(--sh)"><div style="font-family:'Fraunces',serif;font-size:24px;font-weight:300;color:var(--g)">2</div><div style="font-size:11px;color:var(--t3);margin-top:2px">Convites</div></div>
+      </div>
+      <div class="menu-row" onclick="go('convidar')">
+        <div class="menu-icon" style="background:var(--g)">🤝</div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:600;color:var(--g)">Convidar amiga</div><div style="font-size:12px;color:var(--t3)">2 enviados · 1 aceito</div></div>
+        <span style="color:var(--t3);font-size:20px">›</span>
+      </div>
+      <div class="menu-row" onclick="showToast('Em breve!')">
+        <div class="menu-icon">🔔</div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:500">Alertas do bairro</div><div style="font-size:12px;color:var(--t3)">Avisos em tempo real</div></div>
+        <span style="color:var(--t3);font-size:20px">›</span>
+      </div>
+      <div class="menu-row" onclick="showToast('Em breve!')">
+        <div class="menu-icon">📍</div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:500">Locais salvos</div><div style="font-size:12px;color:var(--t3)">3 favoritos</div></div>
+        <span style="color:var(--t3);font-size:20px">›</span>
+      </div>
+      <div class="menu-row" onclick="showToast('Em breve!')">
+        <div class="menu-icon">🔒</div>
+        <div style="flex:1"><div style="font-size:15px;font-weight:500">Privacidade</div><div style="font-size:12px;color:var(--t3)">Dados e permissões</div></div>
+        <span style="color:var(--t3);font-size:20px">›</span>
+      </div>
+      <div class="gap24"></div>
+    </div>
+  </div>
+  <div class="bnav">
+    <button class="ni" onclick="go('feed')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Feed</button>
+    <button class="ni" onclick="go('explorar')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</button>
+    <button class="ni" onclick="go('avaliar')" style="position:relative"><div style="width:52px;height:52px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;top:-26px;box-shadow:0 4px 16px rgba(61,107,94,.4);border:3px solid var(--cream)"><svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div style="height:14px"></div>Avaliar</button>
+    <button class="ni" onclick="go('rota')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>Rota</button>
+    <button class="ni on" onclick="go('perfil')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     CONVIDAR
+══════════════════════════════════════════════ -->
+<div class="screen" id="s-convidar">
+  <div class="topbar">
+    <button style="background:none;border:none;cursor:pointer;font-size:20px;padding:4px;margin-right:4px" onclick="back()">←</button>
+    <span class="logo" style="font-size:20px">Convidar amiga</span>
+  </div>
+  <div class="scroll">
+    <div style="background:linear-gradient(145deg,#2E5249,#3D6B5E);margin:16px;border-radius:var(--r);padding:24px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.06)"></div>
+      <div style="font-size:28px;margin-bottom:10px">🤝</div>
+      <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:300;color:#fff;line-height:1.25;margin-bottom:6px">Cada convite é uma <em style="font-style:italic">amiga mais segura</em></div>
+      <div style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6">O Fica Bem cresce com indicações. Sua rede é a base da confiança.</div>
+    </div>
+    <div class="pad" style="padding-top:8px">
+      <div class="field-wrap">
+        <div class="field-label">Nome da amiga</div>
+        <input class="field-input" type="text" id="inv-name" placeholder="Ex: Juliana" oninput="updatePreview()">
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">E-mail</div>
+        <input class="field-input" type="email" id="inv-email" placeholder="amiga@email.com">
+      </div>
+      <div class="field-wrap">
+        <div class="field-label">Mensagem pessoal (opcional)</div>
+        <textarea class="field-input" id="inv-msg" rows="3" style="resize:none" placeholder="Ex: Oi Ju, uso esse app pra ver se um lugar é seguro antes de sair!" oninput="updatePreview()"></textarea>
+      </div>
+      <div class="invite-preview" style="margin-bottom:20px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:10px">Preview do e-mail</div>
+        <div style="font-size:13px;color:var(--t2);line-height:1.65"><strong id="prev-name" style="color:var(--t)">Sua amiga</strong> você recebeu um convite para o <strong style="color:var(--g)">Fica Bem</strong>.<br><br><span id="prev-msg" style="font-style:italic;color:var(--t3)"></span></div>
+        <div style="margin-top:12px;background:var(--g);color:#fff;padding:10px;border-radius:var(--rs);font-size:13px;font-weight:700;text-align:center">Aceitar convite →</div>
+      </div>
+      <button class="btn btn-p btn-full" onclick="sendInvite()" style="margin-bottom:20px">Enviar convite</button>
+
+      <div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:12px">Seus convites</div>
+      <div class="post" style="margin:0">
+        <div style="padding:12px 14px;display:flex;align-items:center;gap:12px;border-bottom:.5px solid var(--bd)">
+          <div class="c-avatar" style="background:var(--safebg);color:var(--safe);font-size:18px;width:40px;height:40px;font-weight:700">J</div>
+          <div style="flex:1"><div style="font-size:14px;font-weight:600">Júlia Martins</div><div style="font-size:12px;color:var(--t3)">Entrou há 3 dias</div></div>
+          <div style="font-size:12px;font-weight:600;color:var(--safe);background:var(--safebg);padding:4px 10px;border-radius:20px">✓ Ativa</div>
+        </div>
+        <div style="padding:12px 14px;display:flex;align-items:center;gap:12px">
+          <div class="c-avatar" style="background:var(--warnbg);color:var(--warn);font-size:18px;width:40px;height:40px;font-weight:700">R</div>
+          <div style="flex:1"><div style="font-size:14px;font-weight:600">Renata Costa</div><div style="font-size:12px;color:var(--t3)">Pendente · há 2 dias</div></div>
+          <button onclick="showToast('Convite reenviado!')" style="font-size:12px;font-weight:600;color:var(--warn);background:var(--warnbg);padding:6px 12px;border-radius:20px;border:none;cursor:pointer;font-family:'DM Sans',sans-serif">Reenviar</button>
+        </div>
+      </div>
+      <div class="gap24"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     EMAIL LANDING
+══════════════════════════════════════════════ -->
+<div class="screen" id="s-email-landing" style="background:#fff">
+  <div class="email-bar">
+    <div style="font-weight:600;color:#333;font-size:13px;margin-bottom:2px">📧 Marina te convidou para o Fica Bem</div>
+    <div>De: noreply@ficabem.app · Para: você</div>
+  </div>
+  <div class="scroll" style="background:#fff">
+    <div style="padding:32px 24px;max-width:430px">
+      <div style="font-family:'Fraunces',serif;font-size:30px;font-weight:300;color:var(--g);margin-bottom:4px;letter-spacing:-.02em">Fica <em>Bem</em></div>
+      <div style="font-size:12px;color:var(--t3);margin-bottom:28px">ficabem.app</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:22px;padding:16px;background:var(--cream);border-radius:var(--r)">
+        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--g),var(--gl));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">👩</div>
+        <div><div style="font-size:15px;font-weight:600;color:var(--t)">Marina Silva</div><div style="font-size:13px;color:var(--t3)">te enviou um convite pessoal</div></div>
+      </div>
+      <div style="background:var(--gp);border-left:3px solid var(--g);padding:14px 16px;border-radius:0 var(--rs) var(--rs) 0;margin-bottom:24px">
+        <div style="font-size:14px;font-style:italic;color:var(--t);line-height:1.65">"Oi! Uso esse app toda vez que vou sair à noite. Me sinto muito mais tranquila sabendo o score do lugar antes de ir. Te indico muito!"</div>
+      </div>
+      <div style="font-family:'Fraunces',serif;font-size:22px;font-weight:300;color:var(--dark);margin-bottom:8px;line-height:1.25">Navegue com <em style="font-style:italic;color:var(--g)">mais confiança</em></div>
+      <div style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:22px">O Fica Bem reúne avaliações reais de mulheres para te ajudar a decidir se um lugar é seguro — e quando ir.</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px">
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--cream);border-radius:var(--rs)"><span style="font-size:20px">🗺️</span><div><div style="font-size:13px;font-weight:600">Score de risco por horário</div><div style="font-size:12px;color:var(--t3)">Manhã, tarde e noite</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--cream);border-radius:var(--rs)"><span style="font-size:20px">📍</span><div><div style="font-size:13px;font-weight:600">Compartilhe sua rota</div><div style="font-size:12px;color:var(--t3)">Contatos acompanham em tempo real</div></div></div>
+        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--cream);border-radius:var(--rs)"><span style="font-size:20px">⭐</span><div><div style="font-size:13px;font-weight:600">Avalie e ajude outras</div><div style="font-size:12px;color:var(--t3)">Sua experiência conta para a rede</div></div></div>
+      </div>
+      <button class="btn btn-p btn-full" onclick="go('cadastro')" style="font-size:16px;padding:16px;margin-bottom:12px">Aceitar convite e criar conta →</button>
+      <div style="text-align:center;font-size:12px;color:var(--t3);line-height:1.6">Somente mulheres entram por convite.<br>Seus dados são privados e nunca compartilhados.</div>
+      <div style="height:32px;border-top:.5px solid var(--bd);margin-top:28px;padding-top:16px;text-align:center;font-size:11px;color:var(--t3)">© 2025 Fica Bem · Feito para mulheres, por mulheres</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     CADASTRO
+══════════════════════════════════════════════ -->
+<div class="screen" id="s-cadastro">
+  <div class="topbar">
+    <button style="background:none;border:none;cursor:pointer;font-size:20px;padding:4px;margin-right:4px" id="cad-back-btn" onclick="cadBack()">←</button>
+    <span class="logo" style="font-size:20px">Criar conta</span>
+    <div style="font-size:13px;color:var(--t3)" id="cad-counter">1 / 3</div>
+  </div>
+  <div class="cad-progress"><div class="cad-prog-fill" id="cad-fill" style="width:33%"></div></div>
+  <div class="scroll">
+    <!-- step 1 -->
+    <div id="cad-1" class="pad" style="padding-top:24px">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:var(--safebg);padding:5px 12px;border-radius:20px;margin-bottom:18px">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--safe)"></div>
+        <span style="font-size:12px;color:var(--safe);font-weight:600">Convidada por Marina Silva</span>
+      </div>
+      <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:300;margin-bottom:4px;letter-spacing:-.02em">Crie sua <em style="font-style:italic;color:var(--g)">conta</em></div>
+      <div style="font-size:15px;color:var(--t2);margin-bottom:24px">Só leva 2 minutos.</div>
+      <div class="field-wrap"><div class="field-label">Seu nome</div><input class="field-input" type="text" placeholder="Como quer ser chamada?"></div>
+      <div class="field-wrap"><div class="field-label">E-mail</div><input class="field-input" type="email" value="você@email.com" style="background:var(--gp);border-color:var(--gm)"><div class="field-hint">✓ Confirmado pelo convite</div></div>
+      <div class="field-wrap"><div class="field-label">Senha</div><input class="field-input" type="password" placeholder="Mínimo 8 caracteres"></div>
+      <button class="btn btn-p btn-full" onclick="cadNext(2)" style="margin-top:8px">Continuar →</button>
+      <div style="font-size:12px;color:var(--t3);text-align:center;margin-top:12px;line-height:1.6">Ao continuar você concorda com os <span style="color:var(--g)">Termos</span> e a <span style="color:var(--g)">Privacidade</span></div>
+    </div>
+    <!-- step 2 -->
+    <div id="cad-2" class="pad" style="padding-top:24px;display:none">
+      <div style="font-size:36px;margin-bottom:12px">📍</div>
+      <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:300;margin-bottom:4px;letter-spacing:-.02em">Onde você <em style="font-style:italic;color:var(--g)">está?</em></div>
+      <div style="font-size:15px;color:var(--t2);margin-bottom:24px">Para mostrar locais relevantes perto de você.</div>
+      <div class="field-wrap"><div class="field-label">Cidade</div><input class="field-input" type="text" placeholder="Ex: Blumenau"></div>
+      <div class="field-wrap"><div class="field-label">Bairro</div><input class="field-input" type="text" placeholder="Ex: Centro"></div>
+      <button onclick="showToast('Localização detectada: Blumenau, SC 📍')" class="btn btn-s btn-full" style="margin-bottom:16px">📍 Usar minha localização</button>
+      <button class="btn btn-p btn-full" onclick="cadNext(3)">Continuar →</button>
+    </div>
+    <!-- step 3 -->
+    <div id="cad-3" class="pad" style="padding-top:24px;display:none">
+      <div style="font-size:36px;margin-bottom:12px">🤝</div>
+      <div style="font-family:'Fraunces',serif;font-size:26px;font-weight:300;margin-bottom:4px;letter-spacing:-.02em">Quem te <em style="font-style:italic;color:var(--g)">acompanha?</em></div>
+      <div style="font-size:15px;color:var(--t2);margin-bottom:24px">Adicione um contato de confiança agora.</div>
+      <div class="field-wrap"><div class="field-label">Nome</div><input class="field-input" type="text" placeholder="Ex: Mãe, Irmã, Melhor amiga…"></div>
+      <div class="field-wrap"><div class="field-label">WhatsApp</div><input class="field-input" type="tel" placeholder="(47) 99999-0000"></div>
+      <!-- sugestão de adicionar quem convidou -->
+      <div style="background:var(--gp);border-radius:var(--rs);padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;gap:12px;border:.5px solid var(--gm)">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--g);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">👩</div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--g)">Adicionar Marina como contato?</div><div style="font-size:12px;color:var(--t3)">Ela já te conhece</div></div>
+        <button id="add-marina-btn" onclick="addMarina()" style="background:none;border:.5px solid var(--g);color:var(--g);padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:600">Adicionar</button>
+      </div>
+      <button class="btn btn-s btn-full" onclick="go('boasvindas')" style="margin-bottom:10px">Pular por agora</button>
+      <button class="btn btn-p btn-full" onclick="go('boasvindas')">Finalizar cadastro ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BOAS-VINDAS
+══════════════════════════════════════════════ -->
+<div class="screen" id="s-boasvindas">
+  <div class="bv-bg">
+    <div style="position:absolute;top:-80px;right:-80px;width:260px;height:260px;border-radius:50%;background:rgba(255,255,255,.05)"></div>
+    <div style="position:absolute;bottom:-60px;left:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.04)"></div>
+    <div style="width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin-bottom:28px;font-size:42px;animation:popIn .5s cubic-bezier(.175,.885,.32,1.275) both">✅</div>
+    <div style="font-family:'Fraunces',serif;font-size:32px;font-weight:300;color:#fff;line-height:1.2;margin-bottom:10px">Bem-vinda ao<br><em>Fica Bem!</em> 💚</div>
+    <div style="font-size:15px;color:rgba(255,255,255,.68);line-height:1.7;margin-bottom:32px;max-width:300px">Sua conta está ativa. Você faz parte da rede que ajuda mulheres a se mover com segurança.</div>
+    <div style="background:rgba(255,255,255,.12);border:.5px solid rgba(255,255,255,.2);border-radius:var(--r);padding:18px;width:100%;margin-bottom:32px">
+      <div style="font-size:12px;color:rgba(255,255,255,.55);margin-bottom:8px">Convidada por</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:18px">👩</div>
+        <div><div style="font-size:15px;font-weight:600;color:#fff">Marina Silva</div><div style="font-size:12px;color:rgba(255,255,255,.5)">12 avaliações · membro desde jan/25</div></div>
+      </div>
+    </div>
+    <button class="btn-white" onclick="go('feed')" style="font-size:16px;padding:16px">Explorar o feed →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SETOR (lista de locais por categoria)
+══════════════════════════════════════════════ -->
+<div class="screen" id="s-setor">
+  <div class="topbar" id="setor-hdr-bg" style="background:var(--g);border-bottom:none">
+    <button style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.85);font-size:22px;padding:4px;margin-right:6px;line-height:1" onclick="back()">←</button>
+    <div style="flex:1;min-width:0">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span id="setor-hdr-emoji" style="font-size:20px"></span>
+        <div class="setor-title-text" id="setor-hdr-title" style="font-size:20px;color:#fff"></div>
+      </div>
+      <div class="setor-subtitle" id="setor-hdr-sub" style="color:rgba(255,255,255,.6);font-size:11px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+    </div>
+  </div>
+
+  <!-- filtro de turno -->
+  <div style="display:flex;gap:8px;padding:12px 16px;flex-shrink:0;background:var(--cream);border-bottom:.5px solid var(--bd)">
+    <button class="d-tab on" id="st-manha" onclick="setSetorTime(this,'manha')">☀️ Manhã</button>
+    <button class="d-tab" id="st-tarde" onclick="setSetorTime(this,'tarde')">🌤 Tarde</button>
+    <button class="d-tab" id="st-noite" onclick="setSetorTime(this,'noite')">🌙 Noite</button>
+  </div>
+
+  <div class="scroll">
+    <div style="height:12px"></div>
+    <div id="setor-places-list"></div>
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- Lightbox de fotos -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img class="lightbox-img" id="lightbox-img" src="" alt="">
+  <div class="lightbox-caption" id="lightbox-caption"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── navigation ──
+let history = ['onboard'];
+const screens = {
+  'onboard':'s-onboard','feed':'s-feed','explorar':'s-explorar',
+  'detalhe':'s-detalhe','avaliar':'s-avaliar','rota':'s-rota',
+  'perfil':'s-perfil','convidar':'s-convidar','email-landing':'s-email-landing',
+  'cadastro':'s-cadastro','boasvindas':'s-boasvindas','setor':'s-setor'
+};
+const rootScreens = new Set(['feed','explorar','rota','perfil']);
+
+function go(name) {
+  const prev = history[history.length-1];
+  if (prev === name) return;
+  // deactivate current
+  const cur = document.getElementById(screens[prev]);
+  if (cur) {
+    cur.classList.remove('active');
+    if (rootScreens.has(prev)) cur.classList.add('root');
+    else cur.classList.add('prev');
+    setTimeout(()=>cur.classList.remove('prev','root'),350);
+  }
+  // activate new
+  const next = document.getElementById(screens[name]);
+  if (next) {
+    next.classList.add('active');
+    next.classList.remove('prev','root');
+    // scroll to top
+    const sc = next.querySelector('.scroll');
+    if (sc) sc.scrollTop = 0;
+  }
+  history.push(name);
+}
+
+function back() {
+  if (history.length <= 1) return;
+  history.pop();
+  const prev = history[history.length-1];
+  const cur = document.getElementById(screens[history[history.length]]) || document.querySelector('.screen.active');
+  document.querySelectorAll('.screen.active').forEach(s=>{
+    s.classList.remove('active');
+    s.classList.add('prev');
+    setTimeout(()=>s.classList.remove('prev'),350);
+  });
+  const target = document.getElementById(screens[prev]);
+  if (target) { target.classList.remove('root','prev'); target.classList.add('active'); }
+}
+
+// ── place data ──
+const places = {
+  parque:{icon:'🌳',type:'🌳 Parque',name:'Parque Ramiro Ruediger',addr:'Centro · Blumenau',badgeCls:'bs',badgeTxt:'Seguro',scoreCls:'',
+    t:{manha:[84,82,78,88],tarde:[88,84,90,92],noite:[62,55,48,72]},
+    labels:['manha','tarde','noite'],
+    reasons:{manha:['💡 Boa iluminação na pista principal','👥 Alto movimento até 22h','🚔 Ronda policial frequente','⚠️ Área do lago com iluminação parcial'],tarde:['☀️ Ampla visibilidade','👥 Muito movimentado','💡 Excelente iluminação'],noite:['⚠️ Iluminação parcial na área do lago','👥 Movimento reduzido após 22h','💡 Pista principal bem iluminada']}},
+  shopping:{icon:'🛍️',type:'🛍️ Comércio',name:'Neumarkt Shopping',addr:'Garcia · Blumenau',badgeCls:'bs',badgeTxt:'Seguro',
+    t:{manha:[95,96,94,98],tarde:[97,98,96,99],noite:[92,90,88,96]},
+    reasons:{manha:['🛡️ Segurança privada ativa','💡 Iluminação excelente','👥 Alto fluxo de pessoas'],tarde:['🛡️ Segurança em todos os corredores','📹 Câmeras em todo o espaço','👥 Muito movimentado'],noite:['🛡️ Segurança até fechamento','💡 Estacionamento bem iluminado','🚗 Serviço de manobrista']}},
+  metro:{icon:'🚇',type:'🚇 Transporte',name:'Terminal Centro',addr:'Centro · Blumenau',badgeCls:'bw',badgeTxt:'Atenção',
+    t:{manha:[82,85,80,82],tarde:[78,80,76,80],noite:[51,52,45,55]},
+    reasons:{manha:['💡 Iluminado durante o dia','👥 Alto fluxo de usuárias','📹 Câmeras de monitoramento'],tarde:['💡 Iluminação ok','👥 Fluxo moderado','📹 Câmeras ativas'],noite:['⚠️ Saída lateral escura após 22h','👥 Pouco movimento à noite','🌑 Área externa sem iluminação']}},
+  bar:{icon:'🍺',type:'🍺 Bar/Restaurante',name:'Bar do Largo',addr:'Vila Nova · Blumenau',badgeCls:'bw',badgeTxt:'Atenção',
+    t:{manha:[72,70,68,76],tarde:[76,75,78,80],noite:[55,50,60,52]},
+    reasons:{manha:['💡 Calçada ok durante o dia','👥 Movimento moderado'],tarde:['💡 Iluminação adequada','👥 Bom movimento'],noite:['⚠️ Calçada escura na saída','⚠️ Grupos grandes na porta','👥 Agitado mas pouco iluminado']}},
+  viela:{icon:'🛣️',type:'🛣️ Espaço público',name:'Viela Rua Sul',addr:'Pinheiros · Blumenau',badgeCls:'br',badgeTxt:'Risco alto',
+    t:{manha:[28,25,20,38],tarde:[34,30,28,44],noite:[18,15,12,22]},
+    reasons:{manha:['🌑 Iluminação ruim mesmo de dia','👥 Muito isolada','⚠️ Sem câmeras ou vigilância'],tarde:['🌑 Iluminação insuficiente','👥 Baixíssimo movimento'],noite:['🔴 Sem nenhuma iluminação','🚨 Relatos de assédio recentes','👤 Praticamente vazia']}},
+  vilagermanica:{icon:'🎪',type:'🎪 Parque/Eventos',name:'Parque Vila Germânica',addr:'Velha · Blumenau',badgeCls:'bs',badgeTxt:'Seguro',
+    t:{manha:[86,84,80,90],tarde:[91,90,88,95],noite:[74,72,68,80]},
+    reasons:{manha:['💡 Área bem iluminada e organizada','👥 Alto fluxo de visitantes','🛡️ Segurança privada no local'],tarde:['☀️ Ampla visibilidade','👥 Muito movimentado','🛡️ Segurança ativa em todos os setores'],noite:['💡 Boa iluminação nos corredores principais','👥 Movimento reduz após encerramento dos eventos','⚠️ Arredores do estacionamento com atenção']}},
+  rua15:{icon:'🛍️',type:'🛍️ Espaço público',name:'Rua XV de Novembro',addr:'Centro · Blumenau',badgeCls:'bs',badgeTxt:'Seguro',
+    t:{manha:[88,86,84,92],tarde:[92,90,90,95],noite:[65,60,58,72]},
+    reasons:{manha:['💡 Calçadão bem iluminado','👥 Alto fluxo de pedestres e comércio','📹 Câmeras de monitoramento na via'],tarde:['☀️ Excelente visibilidade','👥 Muito movimentado','🛡️ Presença de segurança municipal'],noite:['⚠️ Movimento cai bastante após fechamento do comércio','💡 Iluminação pública ok','👥 Evitar horários de madrugada']}},
+  teatrocarlosgomes:{icon:'🎭',type:'🎭 Equipamento cultural',name:'Teatro Carlos Gomes',addr:'Centro · Blumenau',badgeCls:'bs',badgeTxt:'Seguro',
+    t:{manha:[80,78,76,84],tarde:[85,84,82,88],noite:[78,76,72,84]},
+    reasons:{manha:['💡 Praça em volta bem iluminada','👥 Movimento moderado no entorno','📹 Câmeras na fachada do teatro'],tarde:['💡 Boa iluminação','👥 Fluxo maior em dias de eventos','🛡️ Segurança presente nas sessões'],noite:['💡 Teatro e praça iluminados durante eventos','👥 Movimento concentrado nos horários de apresentação','⚠️ Arredores mais vazios após encerramento']}},
+  catedral:{icon:'⛪',type:'⛪ Espaço público',name:'Catedral São Paulo Apóstolo',addr:'Centro · Blumenau',badgeCls:'bs',badgeTxt:'Seguro',
+    t:{manha:[82,80,78,86],tarde:[84,82,80,88],noite:[60,58,52,68]},
+    reasons:{manha:['💡 Praça central bem iluminada','👥 Movimento constante de fiéis e turistas','📹 Monitoramento na área central'],tarde:['☀️ Boa visibilidade','👥 Região central movimentada','💡 Iluminação adequada'],noite:['⚠️ Praça mais vazia após as missas','💡 Iluminação pública presente','👥 Evitar permanecer sozinha no entorno']}},
+  spitzkopf:{icon:'🌲',type:'🌲 Parque natural',name:'Parque Ecológico Spitzkopf',addr:'Área rural · Blumenau',badgeCls:'bw',badgeTxt:'Atenção',
+    t:{manha:[68,65,60,75],tarde:[72,70,65,78],noite:[30,28,20,40]},
+    reasons:{manha:['💡 Trilhas com baixa iluminação natural','👥 Movimento moderado nos fins de semana','⚠️ Ir sempre acompanhada nas trilhas mais longas'],tarde:['☀️ Melhor horário para visitar','👥 Mais movimento de grupos e famílias','⚠️ Sinalizar saída antes de entrar nas trilhas'],noite:['🔴 Parque fechado após anoitecer','🌑 Área rural sem iluminação pública','🚨 Não recomendado à noite']}}
+};
+let curPlace='parque', curTime='manha';
+
+// ── setores ──
+const setores = {
+  parques:{
+    emoji:'🌳', title:'Parques', cls:'safe',
+    sub:'Parques e áreas verdes de Blumenau',
+    places:['parque','spitzkopf']
+  },
+  shoppings:{
+    emoji:'🛍️', title:'Shoppings', cls:'safe',
+    sub:'Centros comerciais e galerias',
+    places:['shopping','rua15']
+  },
+  terminais:{
+    emoji:'🚇', title:'Terminais', cls:'warn',
+    sub:'Transporte público e terminais de ônibus',
+    places:['metro']
+  },
+  happyhour:{
+    emoji:'🍺', title:'Happy Hour', cls:'warn',
+    sub:'Bares, botequins e vida noturna',
+    places:['bar','viela']
+  },
+  vilagermanica:{
+    emoji:'🎪', title:'Vila Germânica', cls:'safe',
+    sub:'Complexo Vila Germânica e entorno',
+    places:['vilagermanica','parque']
+  },
+  eventos:{
+    emoji:'🎉', title:'Eventos', cls:'safe',
+    sub:'Espaços para eventos e feiras',
+    places:['vilagermanica','teatrocarlosgomes']
+  },
+  cultura:{
+    emoji:'🎭', title:'Cultura', cls:'safe',
+    sub:'Teatros, museus e espaços culturais',
+    places:['teatrocarlosgomes','catedral','rua15']
+  },
+  natureza:{
+    emoji:'🌲', title:'Natureza', cls:'warn',
+    sub:'Trilhas, parques ecológicos e áreas rurais',
+    places:['spitzkopf','parque']
+  }
+};
+
+let curSetor=null, curSetorTime='manha';
+
+function openSetor(id){
+  curSetor=id; curSetorTime='manha';
+  const s=setores[id];
+  const hdr=document.getElementById('setor-hdr-bg');
+  hdr.style.background=s.cls==='warn'?'var(--warn)':s.cls==='risk'?'var(--risk)':'var(--g)';
+  document.getElementById('setor-hdr-emoji').textContent=s.emoji;
+  document.getElementById('setor-hdr-title').innerHTML=s.title.split(' ').map((w,i)=>i===s.title.split(' ').length-1?`<em>${w}</em>`:w).join(' ');
+  document.getElementById('setor-hdr-sub').textContent=s.sub;
+  document.querySelectorAll('#s-setor .d-tab').forEach((t,i)=>t.classList.toggle('on',i===0));
+  renderSetorPlaces('manha');
+  go('setor');
+}
+
+function setSetorTime(btn,t){
+  curSetorTime=t;
+  document.querySelectorAll('#s-setor .d-tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderSetorPlaces(t);
+}
+
+function renderSetorPlaces(t){
+  const s=setores[curSetor];
+  const list=document.getElementById('setor-places-list');
+  list.innerHTML=s.places.map(pid=>{
+    const p=places[pid];
+    const [score,il,mv,seg]=p.t[t];
+    const col=score>=70?'var(--safe)':score>=50?'var(--warn)':'var(--risk)';
+    const badgeCls=score>=70?'bs':score>=50?'bw':'br';
+    const badgeTxt=score>=70?'Seguro':score>=50?'Atenção':'Risco alto';
+    return `<div class="setor-place-row" onclick="openPlace('${pid}')">
+      <div class="setor-place-icon" style="background:${score>=70?'var(--gp)':score>=50?'var(--warnbg)':'var(--riskbg)'}">${p.icon}</div>
+      <div class="setor-place-info">
+        <div class="setor-place-name">${p.name}</div>
+        <div class="setor-place-addr">${p.addr}</div>
+        <div style="margin-top:5px"><span class="post-badge ${badgeCls}" style="font-size:10px;padding:3px 8px;display:inline-flex"><span class="dot"></span>${badgeTxt}</span></div>
+      </div>
+      <div class="setor-place-score">
+        <div class="setor-score-num" style="color:${col}">${score}</div>
+        <div class="setor-mini-bars">
+          <div class="setor-mini-bar"><div class="setor-mini-fill" style="width:${il}%;background:${col}"></div></div>
+          <div class="setor-mini-bar"><div class="setor-mini-fill" style="width:${mv}%;background:${col}"></div></div>
+          <div class="setor-mini-bar"><div class="setor-mini-fill" style="width:${seg}%;background:${col}"></div></div>
+        </div>
+        <div style="font-size:9px;color:var(--t3);text-align:right">il · mv · seg</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openPlace(id){
+  curPlace=id; curTime='manha';
+  const p=places[id];
+  document.getElementById('d-icon').textContent=p.icon;
+  document.getElementById('d-name').textContent=p.name;
+  document.getElementById('d-addr').textContent=p.addr;
+  document.getElementById('d-type-pill').textContent=p.type;
+  const badge=document.getElementById('d-badge');
+  badge.className='post-badge '+p.badgeCls;
+  badge.innerHTML='<div class="dot"></div>'+p.badgeTxt;
+  // reset tabs
+  document.querySelectorAll('.d-tab').forEach((t,i)=>t.classList.toggle('on',i===0));
+  renderDScore('manha');
+  go('detalhe');
+}
+
+function setDTime(btn,t){
+  curTime=t;
+  document.querySelectorAll('.d-tab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderDScore(t);
+}
+
+function renderDScore(t){
+  const p=places[curPlace];
+  const [score,il,mv,seg]=p.t[t];
+  const col=score>=70?'var(--safe)':score>=50?'var(--warn)':'var(--risk)';
+  const lbl=score>=70?'Seguro':score>=50?'Atenção':'Risco alto';
+  const cls=score>=70?'':'var(--warn)'===col?'warn':'risk';
+  document.getElementById('d-score-num').textContent=score;
+  document.getElementById('d-score-num').style.color=col;
+  document.getElementById('d-score-label').textContent=lbl;
+  document.getElementById('d-score-sub').textContent='Baseado em avaliações recentes · '+t==='manha'?'Manhã':t==='tarde'?'Tarde':'Noite';
+  document.getElementById('d-bars').innerHTML=
+    bar('Iluminação',il,col)+bar('Movimento',mv,col)+bar('Segurança',seg,col);
+  const rs=p.reasons[t]||p.reasons.manha;
+  document.getElementById('d-reasons').innerHTML=rs.map(r=>`<div class="d-reason"><div class="d-reason-icon">${r.slice(0,2)}</div><div class="d-reason-text">${r.slice(3)}</div></div>`).join('');
+}
+function bar(l,v,c){return`<div class="d-bar-row"><div class="d-bar-label">${l}</div><div class="d-bar-bg"><div class="d-bar-fill" style="width:${v}%;background:${c}"></div></div><div class="d-bar-val">${v}</div></div>`}
+
+// ── avaliar stepper ──
+let evalStep=1;
+const evalSteps=7;
+function toggleChip(btn){btn.classList.toggle('sel-r');}
+function selectOcorrencia(btn,tipo){
+  btn.closest('.eval-opts').querySelectorAll('.eval-opt').forEach(b=>b.classList.remove('sel','sel-w','sel-r'));
+  const cls=tipo==='nenhuma'?'sel':tipo==='outro'?'sel-w':'sel-r';
+  btn.classList.add(cls);
+  setTimeout(()=>evalNext(),320);
+}
+function selectEval(btn,step,type){
+  btn.closest('.eval-opts').querySelectorAll('.eval-opt').forEach(b=>b.classList.remove('sel','sel-w','sel-r'));
+  const cls=type==='r'?'sel-r':type==='w'?'sel-w':'sel';
+  btn.classList.add(cls);
+  setTimeout(()=>evalNext(),320);
+}
+function evalNext(){
+  if(evalStep<evalSteps){evalStep++;showEvalStep();}
+  else{showToast('✅ Avaliação enviada! Obrigada.');setTimeout(()=>{evalStep=1;fotosUpload=[];renderFotoPreview();showEvalStep();back();},1200);}
+}
+function evalBack(){if(evalStep>1){evalStep--;showEvalStep();}}
+function showEvalStep(){
+  document.querySelectorAll('.eval-step').forEach((s,i)=>s.classList.toggle('on',i===evalStep-1));
+  document.getElementById('eval-fill').style.width=(evalStep/evalSteps*100)+'%';
+  document.getElementById('eval-step-counter').textContent=evalStep+' / '+evalSteps;
+  document.getElementById('eval-back-btn').style.display=evalStep>1?'flex':'none';
+  document.getElementById('eval-next-btn').textContent=evalStep===evalSteps?'Enviar avaliação ✓':'Continuar →';
+  // step 5 (pontos) e step 6 (ocorrência) não usam auto-avançar, mostrar botão continuar
+  document.getElementById('eval-next-btn').style.display=(evalStep===5)?'flex':'flex';
+}
+
+// ── check-in de rota ──
+let checkinSeconds=300, checkinInterval=null, checkinActive=false;
+function startCheckin(){
+  if(checkinInterval) clearInterval(checkinInterval);
+  checkinActive=true; checkinSeconds=300;
+  updateCheckinDisplay();
+  checkinInterval=setInterval(()=>{
+    checkinSeconds--;
+    updateCheckinDisplay();
+    if(checkinSeconds<=0){
+      clearInterval(checkinInterval);
+      const btn=document.getElementById('checkin-btn');
+      btn.textContent='⚠️ Você está bem?';
+      btn.classList.add('alert');
+      showToast('⚠️ Check-in não respondido! Mãe foi avisada.');
+    }
+  },1000);
+}
+function updateCheckinDisplay(){
+  const m=Math.floor(checkinSeconds/60).toString().padStart(2,'0');
+  const s=(checkinSeconds%60).toString().padStart(2,'0');
+  document.getElementById('checkin-timer').textContent=m+':'+s;
+}
+function doCheckin(){
+  showToast('✅ Check-in confirmado! Próximo em 5 min.');
+  checkinSeconds=300;
+  const btn=document.getElementById('checkin-btn');
+  btn.textContent='✅ Estou bem';
+  btn.classList.remove('alert');
+  if(checkinActive) startCheckin();
+}
+function showEvalStep(){
+  document.querySelectorAll('.eval-step').forEach((s,i)=>s.classList.toggle('on',i===evalStep-1));
+  document.getElementById('eval-fill').style.width=(evalStep/evalSteps*100)+'%';
+  document.getElementById('eval-step-counter').textContent=evalStep+' / '+evalSteps;
+  document.getElementById('eval-back-btn').style.display=evalStep>1?'flex':'none';
+  document.getElementById('eval-next-btn').textContent=evalStep===evalSteps?'Enviar avaliação ✓':'Continuar →';
+}
+
+// ── rota ──
+function startSharing(name){
+  document.getElementById('sharing-name-label').textContent=name;
+  document.getElementById('sharing-pill').style.display='flex';
+  showToast('📍 Compartilhando com '+name);
+  startCheckin();
+}
+function stopSharing(){
+  document.getElementById('sharing-pill').style.display='none';
+  if(checkinInterval) clearInterval(checkinInterval);
+  checkinActive=false;
+  checkinSeconds=300;
+  updateCheckinDisplay();
+  const btn=document.getElementById('checkin-btn');
+  btn.textContent='✅ Estou bem';
+  btn.classList.remove('alert');
+  showToast('Compartilhamento encerrado');
+}
+
+// ── cadastro ──
+let cadStep=1;
+function cadNext(n){
+  document.getElementById('cad-'+cadStep).style.display='none';
+  cadStep=n;
+  document.getElementById('cad-'+cadStep).style.display='block';
+  document.getElementById('cad-fill').style.width=(cadStep/3*100)+'%';
+  document.getElementById('cad-counter').textContent=cadStep+' / 3';
+}
+function cadBack(){if(cadStep>1){cadNext(cadStep-1);}}
+function addMarina(){
+  const btn=document.getElementById('add-marina-btn');
+  btn.textContent='✓ Adicionada';btn.style.background='var(--g)';btn.style.color='#fff';
+  showToast('Marina adicionada como contato!');
+}
+
+// ── convite ──
+function updatePreview(){
+  const n=document.getElementById('inv-name').value;
+  const m=document.getElementById('inv-msg').value;
+  document.getElementById('prev-name').textContent=n||'Sua amiga';
+  document.getElementById('prev-msg').textContent=m;
+}
+function sendInvite(){
+  const n=document.getElementById('inv-name').value.trim();
+  const e=document.getElementById('inv-email').value.trim();
+  if(!n||!e){showToast('Preencha nome e e-mail');return;}
+  showToast('✅ Convite enviado para '+n+'!');
+  document.getElementById('inv-name').value='';
+  document.getElementById('inv-email').value='';
+  document.getElementById('inv-msg').value='';
+  document.getElementById('prev-name').textContent='Sua amiga';
+  document.getElementById('prev-msg').textContent='';
+}
+
+// ── filter tabs ──
+function selTab(btn){btn.closest('div').querySelectorAll('.d-tab').forEach(t=>t.classList.remove('on'));btn.classList.add('on');showToast('Filtro aplicado');}
+
+// ── toast ──
+let toastT;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ── fotos ──
+let fotosUpload = [];
+function handleFotoUpload(e){
+  const files = Array.from(e.target.files).slice(0, 3 - fotosUpload.length);
+  files.forEach(file => {
+    if(fotosUpload.length >= 3){ showToast('Máximo de 3 fotos por avaliação'); return; }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      fotosUpload.push({src: ev.target.result, name: file.name});
+      renderFotoPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+function renderFotoPreview(){
+  const wrap = document.getElementById('foto-preview-wrap');
+  const area = document.getElementById('foto-upload-area');
+  wrap.innerHTML = fotosUpload.map((f,i) => `
+    <div class="foto-preview-item">
+      <img class="foto-preview-img" src="${f.src}" onclick="openLightboxSrc('${f.src}','Sua foto')">
+      <button class="foto-preview-del" onclick="removeFoto(${i})">✕</button>
+    </div>`).join('');
+  area.style.display = fotosUpload.length >= 3 ? 'none' : '';
+}
+function removeFoto(i){
+  fotosUpload.splice(i,1);
+  renderFotoPreview();
+}
+
+// Lightbox
+const mockFotos = {
+  mock1:{src:'', caption:'🌳 Parque Ramiro · pista principal · há 3 dias'},
+  mock2:{src:'', caption:'💡 Iluminação noturna · há 1 semana'},
+  mock3:{src:'', caption:'🛤️ Entrada do parque · há 2 semanas'},
+};
+function openLightbox(id){
+  // para mocks mostra placeholder visual
+  const lb = document.getElementById('lightbox');
+  const img = document.getElementById('lightbox-img');
+  const cap = document.getElementById('lightbox-caption');
+  img.style.display='none';
+  cap.textContent = mockFotos[id]?.caption || '';
+  lb.innerHTML = `<button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <div style="width:280px;height:200px;border-radius:var(--rs);background:linear-gradient(135deg,#2E5249,#3D6B5E);display:flex;align-items:center;justify-content:center;font-size:64px">${id==='mock1'?'🌳':id==='mock2'?'💡':'🛤️'}</div>
+    <div class="lightbox-caption">${mockFotos[id]?.caption||''}</div>`;
+  lb.classList.add('open');
+}
+function openLightboxSrc(src, caption){
+  const lb = document.getElementById('lightbox');
+  lb.innerHTML = `<button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <img class="lightbox-img" src="${src}" alt="">
+    <div class="lightbox-caption">${caption}</div>`;
+  lb.classList.add('open');
+}
+function closeLightbox(){
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+// init
+document.getElementById('eval-back-btn').style.display='none';
+</script>
+</body>
+</html>
