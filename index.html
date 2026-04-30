@@ -311,10 +311,11 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
 .setor-mini-fill{height:100%;border-radius:2px}
 
 /* ── botão flutuante de feedback ── */
-.fab-feedback{position:fixed;bottom:90px;right:calc(50% - 430px/2 + 16px);z-index:9000;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
-@media(max-width:430px){.fab-feedback{right:16px}}
+.fab-feedback{position:fixed;bottom:90px;right:16px;z-index:9000}
 .fab-btn{display:flex;align-items:center;gap:6px;background:var(--g);border:none;cursor:pointer;padding:10px 14px 10px 12px;border-radius:24px;box-shadow:0 4px 16px rgba(61,107,94,.4);transition:transform .2s;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#fff}
 .fab-btn:active{transform:scale(.92)}
+/* No desktop (>430px), esconder o nosso botão — o GitHub Pages já mostra o dele */
+@media(min-width:431px){.fab-feedback{display:none}}
 .foto-galeria{overflow-x:auto;display:flex;gap:8px;padding:0 20px 16px}
 .foto-galeria::-webkit-scrollbar{display:none}
 .foto-thumb{width:100px;height:80px;border-radius:var(--rs);object-fit:cover;flex-shrink:0;border:.5px solid var(--bd);cursor:pointer;transition:opacity .18s}
