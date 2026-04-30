@@ -364,6 +364,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
 .row-between{display:flex;align-items:center;justify-content:space-between}
 @keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="app">
@@ -1406,6 +1407,26 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
 <div class="toast" id="toast"></div>
 
 <script>
+// ── Supabase — configuração ──────────────────────────────
+const SUPABASE_URL = 'https://pzydjkfryiqlyfsmppev.supabase.co/rest/v1/';
+// ↑ Substitua pelo seu Project URL (Settings > API)
+ 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6eWRqa2ZyeWlxbHlmc21wcGV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NjA2NzAsImV4cCI6MjA5MzEzNjY3MH0.9Kx640dHdpbeRMMkC6xiX_85JEco6dufUShyH8SJREA';
+// ↑ Substitua pela sua anon public key (Settings > API)
+ 
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+ 
+// Verificar se há usuária logada ao abrir o app
+sb.auth.onAuthStateChange((event, session) => {
+  if (event === 'SIGNED_IN' && history[history.length-1] === 'onboard') {
+    go('feed');
+  }
+  if (event === 'SIGNED_OUT') {
+    go('onboard');
+  }
+});
+
+
 // ── navigation ──
 let history = ['onboard'];
 const screens = {
