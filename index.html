@@ -15,6 +15,8 @@
     })(window, document, "clarity", "script", "wj0f2f8old");
 </script>
 
+<!-- Supabase -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- Tally feedback widget -->
 <script async src="https://tally.so/widgets/embed.js"></script>
 <style>
@@ -981,9 +983,6 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
           <button class="ocorr-chip" onclick="toggleChip(this)">👥 Muito movimento</button>
           <button class="ocorr-chip" onclick="toggleChip(this)">👤 Local isolado</button>
         </div>
-        <div style="margin-top:16px">
-          <button class="btn btn-s btn-full" onclick="evalNext()">Continuar →</button>
-        </div>
       </div>
       <!-- Step 6: Ocorrência de assédio/incidente -->
       <div class="eval-step" id="est-6">
@@ -1009,7 +1008,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
           <button class="eval-opt" onclick="selectEval(this,7,'r')"><div class="eval-opt-icon">🔴</div><div class="eval-opt-text"><div class="eval-opt-title">Me senti insegura</div><div class="eval-opt-sub">Houve situação que me incomodou</div></div></button>
         </div>
         <div class="field-label">Comentário (opcional · máx. 200 caracteres)</div>
-        <textarea class="field-input" rows="3" maxlength="200" placeholder="Ex: Fui à noite e o estacionamento estava bem escuro perto da saída lateral…" style="resize:none"></textarea>
+        <textarea class="field-input" id="eval-comentario" rows="3" maxlength="200" placeholder="Ex: Fui à noite e o estacionamento estava bem escuro perto da saída lateral…" style="resize:none"></textarea>
         <div style="font-size:11px;color:var(--t3);margin-top:4px;text-align:right;margin-bottom:16px">Seus dados são anonimizados</div>
 
         <div class="field-label">Fotos (opcional · máx. 3)</div>
@@ -1633,20 +1632,7 @@ function selectEval(btn,step,type){
   btn.classList.add(cls);
   setTimeout(()=>evalNext(),320);
 }
-function evalNext(){
-  if(evalStep<evalSteps){evalStep++;showEvalStep();}
-  else{showToast('✅ Avaliação enviada! Obrigada.');setTimeout(()=>{evalStep=1;fotosUpload=[];renderFotoPreview();showEvalStep();back();},1200);}
-}
-function evalBack(){if(evalStep>1){evalStep--;showEvalStep();}}
-function showEvalStep(){
-  document.querySelectorAll('.eval-step').forEach((s,i)=>s.classList.toggle('on',i===evalStep-1));
-  document.getElementById('eval-fill').style.width=(evalStep/evalSteps*100)+'%';
-  document.getElementById('eval-step-counter').textContent=evalStep+' / '+evalSteps;
-  document.getElementById('eval-back-btn').style.display=evalStep>1?'flex':'none';
-  document.getElementById('eval-next-btn').textContent=evalStep===evalSteps?'Enviar avaliação ✓':'Continuar →';
-  // step 5 (pontos) e step 6 (ocorrência) não usam auto-avançar, mostrar botão continuar
-  document.getElementById('eval-next-btn').style.display=(evalStep===5)?'flex':'flex';
-}
+
 
 // ── check-in de rota ──
 let checkinSeconds=300, checkinInterval=null, checkinActive=false;
@@ -1679,14 +1665,6 @@ function doCheckin(){
   btn.classList.remove('alert');
   if(checkinActive) startCheckin();
 }
-function showEvalStep(){
-  document.querySelectorAll('.eval-step').forEach((s,i)=>s.classList.toggle('on',i===evalStep-1));
-  document.getElementById('eval-fill').style.width=(evalStep/evalSteps*100)+'%';
-  document.getElementById('eval-step-counter').textContent=evalStep+' / '+evalSteps;
-  document.getElementById('eval-back-btn').style.display=evalStep>1?'flex':'none';
-  document.getElementById('eval-next-btn').textContent=evalStep===evalSteps?'Enviar avaliação ✓':'Continuar →';
-}
-
 // ── rota ──
 function startSharing(name){
   document.getElementById('sharing-name-label').textContent=name;
@@ -1816,8 +1794,144 @@ function closeLightbox(){
   document.getElementById('lightbox').classList.remove('open');
 }
 
+// ── Supabase config ──
+const SUPA_URL = 'COLE_SUA_PROJECT_URL_AQUI';
+const SUPA_KEY = 'COLE_SUA_ANON_KEY_AQUI';
+const supabase = window.supabase ? supabase.createClient(SUPA_URL, SUPA_KEY) : null;
+
+// ── estado da avaliação ──
+const evalData = {
+  local_id: null,
+  local_nome: null,
+  contexto: null,
+  iluminacao: null,
+  movimento: null,
+  pontos_observados: [],
+  ocorrencia: null,
+  sensacao_geral: null,
+  comentario: null,
+  fotos_urls: []
+};
+
+// sobrescreve selectEval para capturar dados
+function selectEval(btn, step, type) {
+  btn.closest('.eval-opts').querySelectorAll('.eval-opt').forEach(b => b.classList.remove('sel','sel-w','sel-r'));
+  const cls = type==='r' ? 'sel-r' : type==='w' ? 'sel-w' : 'sel';
+  btn.classList.add(cls);
+  // captura valor
+  const titulo = btn.querySelector('.eval-opt-title')?.textContent || '';
+  if (step === 1) { evalData.local_nome = titulo; evalData.local_id = titulo.toLowerCase().replace(/\s+/g,'-'); }
+  if (step === 2) evalData.contexto = titulo;
+  if (step === 3) evalData.iluminacao = type;
+  if (step === 4) evalData.movimento = type;
+  if (step === 7) evalData.sensacao_geral = type;
+  setTimeout(() => evalNext(), 320);
+}
+
+function selectOcorrencia(btn, tipo) {
+  btn.closest('.eval-opts').querySelectorAll('.eval-opt').forEach(b => b.classList.remove('sel','sel-w','sel-r'));
+  const cls = tipo==='nenhuma' ? 'sel' : tipo==='outro' ? 'sel-w' : 'sel-r';
+  btn.classList.add(cls);
+  evalData.ocorrencia = tipo;
+  setTimeout(() => evalNext(), 320);
+}
+
+// ── upload fotos para Supabase Storage ──
+async function uploadFotos() {
+  if (!supabase || fotosUpload.length === 0) return [];
+  const urls = [];
+  for (const foto of fotosUpload) {
+    try {
+      const blob = await fetch(foto.src).then(r => r.blob());
+      const ext = foto.name.split('.').pop() || 'jpg';
+      const path = `avaliacoes/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const { data, error } = await supabase.storage.from('fotos').upload(path, blob, { contentType: blob.type });
+      if (!error) {
+        const { data: urlData } = supabase.storage.from('fotos').getPublicUrl(path);
+        urls.push(urlData.publicUrl);
+      }
+    } catch(e) { console.error('Erro upload foto:', e); }
+  }
+  return urls;
+}
+
+// ── salva avaliação no banco ──
+async function salvarAvaliacao() {
+  evalData.comentario = document.getElementById('eval-comentario')?.value || '';
+  evalData.pontos_observados = Array.from(
+    document.querySelectorAll('#pontos-chips .ocorr-chip.sel-r')
+  ).map(b => b.textContent.trim());
+
+  showToast('⏳ Enviando avaliação…');
+
+  let fotosUrls = [];
+  try { fotosUrls = await uploadFotos(); } catch(e) {}
+
+  const payload = {
+    local_id:           evalData.local_id,
+    local_nome:         evalData.local_nome,
+    contexto:           evalData.contexto,
+    iluminacao:         evalData.iluminacao,
+    movimento:          evalData.movimento,
+    pontos_observados:  evalData.pontos_observados,
+    ocorrencia:         evalData.ocorrencia,
+    sensacao_geral:     evalData.sensacao_geral,
+    comentario:         evalData.comentario,
+    fotos_urls:         fotosUrls,
+    criado_em:          new Date().toISOString()
+  };
+
+  if (supabase && SUPA_URL !== 'COLE_SUA_PROJECT_URL_AQUI') {
+    const { error } = await supabase.from('avaliacoes').insert([payload]);
+    if (error) {
+      console.error('Erro Supabase:', error);
+      showToast('⚠️ Erro ao enviar. Tente novamente.');
+      return;
+    }
+  } else {
+    // modo demo sem Supabase configurado
+    console.log('📝 Avaliação (demo):', payload);
+  }
+
+  showToast('✅ Avaliação enviada! Obrigada.');
+  setTimeout(() => {
+    evalStep = 1;
+    fotosUpload = [];
+    renderFotoPreview();
+    // limpa estado
+    Object.keys(evalData).forEach(k => evalData[k] = Array.isArray(evalData[k]) ? [] : null);
+    document.querySelectorAll('.eval-opt').forEach(b => b.classList.remove('sel','sel-w','sel-r'));
+    document.querySelectorAll('.ocorr-chip').forEach(b => b.classList.remove('sel-r'));
+    const ta = document.getElementById('eval-comentario');
+    if (ta) ta.value = '';
+    showEvalStep();
+    back();
+  }, 1400);
+}
+
+function evalNext() {
+  if (evalStep < evalSteps) {
+    evalStep++;
+    showEvalStep();
+  } else {
+    salvarAvaliacao();
+  }
+}
+
+function evalBack() { if (evalStep > 1) { evalStep--; showEvalStep(); } }
+
+function showEvalStep() {
+  document.querySelectorAll('.eval-step').forEach((s,i) => s.classList.toggle('on', i===evalStep-1));
+  document.getElementById('eval-fill').style.width = (evalStep/evalSteps*100)+'%';
+  document.getElementById('eval-step-counter').textContent = evalStep+' / '+evalSteps;
+  document.getElementById('eval-back-btn').style.display = evalStep > 1 ? 'flex' : 'none';
+  document.getElementById('eval-next-btn').textContent = evalStep === evalSteps ? 'Enviar avaliação ✓' : 'Continuar →';
+  // no step 7 o botão "Continuar" só avança se clicar (sensação geral auto-avança, mas comentário não)
+  document.getElementById('eval-next-btn').style.display = 'flex';
+}
+
 // init
-document.getElementById('eval-back-btn').style.display='none';
+document.getElementById('eval-back-btn').style.display = 'none';
 </script>
 <!-- Botão flutuante de feedback -->
 <button
