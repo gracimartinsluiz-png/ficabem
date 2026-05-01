@@ -15,7 +15,6 @@
     })(window, document, "clarity", "script", "wj0f2f8old");
 </script>
 
-<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- Tally feedback widget -->
 <script async src="https://tally.so/widgets/embed.js"></script>
@@ -1411,7 +1410,6 @@ const rootScreens = new Set(['feed','explorar','rota','perfil']);
 function go(name) {
   const prev = history[history.length-1];
   if (prev === name) return;
-  // deactivate current
   const cur = document.getElementById(screens[prev]);
   if (cur) {
     cur.classList.remove('active');
@@ -1419,12 +1417,10 @@ function go(name) {
     else cur.classList.add('prev');
     setTimeout(()=>cur.classList.remove('prev','root'),350);
   }
-  // activate new
   const next = document.getElementById(screens[name]);
   if (next) {
     next.classList.add('active');
     next.classList.remove('prev','root');
-    // scroll to top
     const sc = next.querySelector('.scroll');
     if (sc) sc.scrollTop = 0;
   }
@@ -1435,7 +1431,6 @@ function back() {
   if (history.length <= 1) return;
   history.pop();
   const prev = history[history.length-1];
-  const cur = document.getElementById(screens[history[history.length]]) || document.querySelector('.screen.active');
   document.querySelectorAll('.screen.active').forEach(s=>{
     s.classList.remove('active');
     s.classList.add('prev');
@@ -1447,9 +1442,8 @@ function back() {
 
 // ── place data ──
 const places = {
-  parque:{icon:'🌳',type:'🌳 Parque',name:'Parque Ramiro Ruediger',addr:'Centro · Blumenau',badgeCls:'bs',badgeTxt:'Seguro',scoreCls:'',
+  parque:{icon:'🌳',type:'🌳 Parque',name:'Parque Ramiro Ruediger',addr:'Centro · Blumenau',badgeCls:'bs',badgeTxt:'Seguro',
     t:{manha:[84,82,78,88],tarde:[88,84,90,92],noite:[62,55,48,72]},
-    labels:['manha','tarde','noite'],
     reasons:{manha:['💡 Boa iluminação na pista principal','👥 Alto movimento até 22h','🚔 Ronda policial frequente','⚠️ Área do lago com iluminação parcial'],tarde:['☀️ Ampla visibilidade','👥 Muito movimentado','💡 Excelente iluminação'],noite:['⚠️ Iluminação parcial na área do lago','👥 Movimento reduzido após 22h','💡 Pista principal bem iluminada']}},
   shopping:{icon:'🛍️',type:'🛍️ Comércio',name:'Neumarkt Shopping',addr:'Garcia · Blumenau',badgeCls:'bs',badgeTxt:'Seguro',
     t:{manha:[95,96,94,98],tarde:[97,98,96,99],noite:[92,90,88,96]},
@@ -1483,48 +1477,15 @@ let curPlace='parque', curTime='manha';
 
 // ── setores ──
 const setores = {
-  parques:{
-    emoji:'🌳', title:'Parques', cls:'safe',
-    sub:'Parques e áreas verdes de Blumenau',
-    places:['parque','spitzkopf']
-  },
-  shoppings:{
-    emoji:'🛍️', title:'Shoppings', cls:'safe',
-    sub:'Centros comerciais e galerias',
-    places:['shopping','rua15']
-  },
-  terminais:{
-    emoji:'🚇', title:'Terminais', cls:'warn',
-    sub:'Transporte público e terminais de ônibus',
-    places:['metro']
-  },
-  happyhour:{
-    emoji:'🍺', title:'Happy Hour', cls:'warn',
-    sub:'Bares, botequins e vida noturna',
-    places:['bar','viela']
-  },
-  vilagermanica:{
-    emoji:'🎪', title:'Vila Germânica', cls:'safe',
-    sub:'Complexo Vila Germânica e entorno',
-    places:['vilagermanica','parque']
-  },
-  eventos:{
-    emoji:'🎉', title:'Eventos', cls:'safe',
-    sub:'Espaços para eventos e feiras',
-    places:['vilagermanica','teatrocarlosgomes']
-  },
-  cultura:{
-    emoji:'🎭', title:'Cultura', cls:'safe',
-    sub:'Teatros, museus e espaços culturais',
-    places:['teatrocarlosgomes','catedral','rua15']
-  },
-  natureza:{
-    emoji:'🌲', title:'Natureza', cls:'warn',
-    sub:'Trilhas, parques ecológicos e áreas rurais',
-    places:['spitzkopf','parque']
-  }
+  parques:{emoji:'🌳',title:'Parques',cls:'safe',sub:'Parques e áreas verdes de Blumenau',places:['parque','spitzkopf']},
+  shoppings:{emoji:'🛍️',title:'Shoppings',cls:'safe',sub:'Centros comerciais e galerias',places:['shopping','rua15']},
+  terminais:{emoji:'🚇',title:'Terminais',cls:'warn',sub:'Transporte público e terminais de ônibus',places:['metro']},
+  happyhour:{emoji:'🍺',title:'Happy Hour',cls:'warn',sub:'Bares, botequins e vida noturna',places:['bar','viela']},
+  vilagermanica:{emoji:'🎪',title:'Vila Germânica',cls:'safe',sub:'Complexo Vila Germânica e entorno',places:['vilagermanica','parque']},
+  eventos:{emoji:'🎉',title:'Eventos',cls:'safe',sub:'Espaços para eventos e feiras',places:['vilagermanica','teatrocarlosgomes']},
+  cultura:{emoji:'🎭',title:'Cultura',cls:'safe',sub:'Teatros, museus e espaços culturais',places:['teatrocarlosgomes','catedral','rua15']},
+  natureza:{emoji:'🌲',title:'Natureza',cls:'warn',sub:'Trilhas, parques ecológicos e áreas rurais',places:['spitzkopf','parque']}
 };
-
 let curSetor=null, curSetorTime='manha';
 
 function openSetor(id){
@@ -1586,7 +1547,6 @@ function openPlace(id){
   const badge=document.getElementById('d-badge');
   badge.className='post-badge '+p.badgeCls;
   badge.innerHTML='<div class="dot"></div>'+p.badgeTxt;
-  // reset tabs
   document.querySelectorAll('.d-tab').forEach((t,i)=>t.classList.toggle('on',i===0));
   renderDScore('manha');
   go('detalhe');
@@ -1604,35 +1564,128 @@ function renderDScore(t){
   const [score,il,mv,seg]=p.t[t];
   const col=score>=70?'var(--safe)':score>=50?'var(--warn)':'var(--risk)';
   const lbl=score>=70?'Seguro':score>=50?'Atenção':'Risco alto';
-  const cls=score>=70?'':'var(--warn)'===col?'warn':'risk';
   document.getElementById('d-score-num').textContent=score;
   document.getElementById('d-score-num').style.color=col;
   document.getElementById('d-score-label').textContent=lbl;
-  document.getElementById('d-score-sub').textContent='Baseado em avaliações recentes · '+t==='manha'?'Manhã':t==='tarde'?'Tarde':'Noite';
-  document.getElementById('d-bars').innerHTML=
-    bar('Iluminação',il,col)+bar('Movimento',mv,col)+bar('Segurança',seg,col);
+  document.getElementById('d-score-sub').textContent='Baseado em avaliações recentes · '+(t==='manha'?'Manhã':t==='tarde'?'Tarde':'Noite');
+  document.getElementById('d-bars').innerHTML=bar('Iluminação',il,col)+bar('Movimento',mv,col)+bar('Segurança',seg,col);
   const rs=p.reasons[t]||p.reasons.manha;
   document.getElementById('d-reasons').innerHTML=rs.map(r=>`<div class="d-reason"><div class="d-reason-icon">${r.slice(0,2)}</div><div class="d-reason-text">${r.slice(3)}</div></div>`).join('');
 }
-function bar(l,v,c){return`<div class="d-bar-row"><div class="d-bar-label">${l}</div><div class="d-bar-bg"><div class="d-bar-fill" style="width:${v}%;background:${c}"></div></div><div class="d-bar-val">${v}</div></div>`}
+function bar(l,v,c){return`<div class="d-bar-row"><div class="d-bar-label">${l}</div><div class="d-bar-bg"><div class="d-bar-fill" style="width:${v}%;background:${c}"></div></div><div class="d-bar-val">${v}</div></div>`;}
+
+// ── Supabase ──
+const SUPA_URL = 'COLE_SUA_PROJECT_URL_AQUI';
+const SUPA_KEY = 'COLE_SUA_ANON_KEY_AQUI';
+let sb = null;
+try {
+  if (window.supabase && SUPA_URL !== 'COLE_SUA_PROJECT_URL_AQUI') {
+    sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+  }
+} catch(e) { console.warn('Supabase não configurado, modo demo.'); }
+
+// ── estado da avaliação ──
+const evalData = {
+  local_id: null, local_nome: null, contexto: null,
+  iluminacao: null, movimento: null, pontos_observados: [],
+  ocorrencia: null, sensacao_geral: null, comentario: null
+};
 
 // ── avaliar stepper ──
-let evalStep=1;
-const evalSteps=7;
-function toggleChip(btn){btn.classList.toggle('sel-r');}
-function selectOcorrencia(btn,tipo){
+let evalStep = 1;
+const evalSteps = 7;
+
+function toggleChip(btn){ btn.classList.toggle('sel-r'); }
+
+function selectEval(btn, step, type) {
   btn.closest('.eval-opts').querySelectorAll('.eval-opt').forEach(b=>b.classList.remove('sel','sel-w','sel-r'));
-  const cls=tipo==='nenhuma'?'sel':tipo==='outro'?'sel-w':'sel-r';
+  const cls = type==='r'?'sel-r':type==='w'?'sel-w':'sel';
   btn.classList.add(cls);
-  setTimeout(()=>evalNext(),320);
-}
-function selectEval(btn,step,type){
-  btn.closest('.eval-opts').querySelectorAll('.eval-opt').forEach(b=>b.classList.remove('sel','sel-w','sel-r'));
-  const cls=type==='r'?'sel-r':type==='w'?'sel-w':'sel';
-  btn.classList.add(cls);
-  setTimeout(()=>evalNext(),320);
+  const titulo = btn.querySelector('.eval-opt-title')?.textContent || '';
+  if (step===1) { evalData.local_nome=titulo; evalData.local_id=titulo.toLowerCase().replace(/\s+/g,'-'); }
+  if (step===2) evalData.contexto=titulo;
+  if (step===3) evalData.iluminacao=type;
+  if (step===4) evalData.movimento=type;
+  if (step===7) evalData.sensacao_geral=type;
+  setTimeout(()=>evalNext(), 320);
 }
 
+function selectOcorrencia(btn, tipo) {
+  btn.closest('.eval-opts').querySelectorAll('.eval-opt').forEach(b=>b.classList.remove('sel','sel-w','sel-r'));
+  const cls = tipo==='nenhuma'?'sel':tipo==='outro'?'sel-w':'sel-r';
+  btn.classList.add(cls);
+  evalData.ocorrencia = tipo;
+  setTimeout(()=>evalNext(), 320);
+}
+
+async function uploadFotos() {
+  if (!sb || fotosUpload.length===0) return [];
+  const urls = [];
+  for (const foto of fotosUpload) {
+    try {
+      const blob = await fetch(foto.src).then(r=>r.blob());
+      const ext = foto.name.split('.').pop()||'jpg';
+      const path = `avaliacoes/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+      const {error} = await sb.storage.from('fotos').upload(path, blob, {contentType:blob.type});
+      if (!error) {
+        const {data:u} = sb.storage.from('fotos').getPublicUrl(path);
+        urls.push(u.publicUrl);
+      }
+    } catch(e){ console.error('Erro upload:', e); }
+  }
+  return urls;
+}
+
+async function salvarAvaliacao() {
+  evalData.comentario = document.getElementById('eval-comentario')?.value||'';
+  evalData.pontos_observados = Array.from(
+    document.querySelectorAll('#pontos-chips .ocorr-chip.sel-r')
+  ).map(b=>b.textContent.trim());
+
+  showToast('⏳ Enviando avaliação…');
+  let fotosUrls = [];
+  try { fotosUrls = await uploadFotos(); } catch(e){}
+
+  const payload = {
+    local_id: evalData.local_id, local_nome: evalData.local_nome,
+    contexto: evalData.contexto, iluminacao: evalData.iluminacao,
+    movimento: evalData.movimento, pontos_observados: evalData.pontos_observados,
+    ocorrencia: evalData.ocorrencia, sensacao_geral: evalData.sensacao_geral,
+    comentario: evalData.comentario, fotos_urls: fotosUrls,
+    criado_em: new Date().toISOString()
+  };
+
+  if (sb) {
+    const {error} = await sb.from('avaliacoes').insert([payload]);
+    if (error) { console.error('Supabase error:', error); showToast('⚠️ Erro ao enviar. Tente novamente.'); return; }
+  } else {
+    console.log('📝 Avaliação (demo, Supabase não configurado):', payload);
+  }
+
+  showToast('✅ Avaliação enviada! Obrigada.');
+  setTimeout(()=>{
+    evalStep=1; fotosUpload=[]; renderFotoPreview();
+    Object.keys(evalData).forEach(k=>evalData[k]=Array.isArray(evalData[k])?[]:null);
+    document.querySelectorAll('.eval-opt').forEach(b=>b.classList.remove('sel','sel-w','sel-r'));
+    document.querySelectorAll('.ocorr-chip').forEach(b=>b.classList.remove('sel-r'));
+    const ta=document.getElementById('eval-comentario'); if(ta) ta.value='';
+    showEvalStep(); back();
+  }, 1400);
+}
+
+function evalNext() {
+  if (evalStep < evalSteps) { evalStep++; showEvalStep(); }
+  else { salvarAvaliacao(); }
+}
+function evalBack() { if (evalStep>1){ evalStep--; showEvalStep(); } }
+
+function showEvalStep() {
+  document.querySelectorAll('.eval-step').forEach((s,i)=>s.classList.toggle('on',i===evalStep-1));
+  document.getElementById('eval-fill').style.width=(evalStep/evalSteps*100)+'%';
+  document.getElementById('eval-step-counter').textContent=evalStep+' / '+evalSteps;
+  document.getElementById('eval-back-btn').style.display=evalStep>1?'flex':'none';
+  document.getElementById('eval-next-btn').textContent=evalStep===evalSteps?'Enviar avaliação ✓':'Continuar →';
+}
 
 // ── check-in de rota ──
 let checkinSeconds=300, checkinInterval=null, checkinActive=false;
@@ -1665,6 +1718,7 @@ function doCheckin(){
   btn.classList.remove('alert');
   if(checkinActive) startCheckin();
 }
+
 // ── rota ──
 function startSharing(name){
   document.getElementById('sharing-name-label').textContent=name;
@@ -1675,12 +1729,10 @@ function startSharing(name){
 function stopSharing(){
   document.getElementById('sharing-pill').style.display='none';
   if(checkinInterval) clearInterval(checkinInterval);
-  checkinActive=false;
-  checkinSeconds=300;
+  checkinActive=false; checkinSeconds=300;
   updateCheckinDisplay();
   const btn=document.getElementById('checkin-btn');
-  btn.textContent='✅ Estou bem';
-  btn.classList.remove('alert');
+  btn.textContent='✅ Estou bem'; btn.classList.remove('alert');
   showToast('Compartilhamento encerrado');
 }
 
@@ -1693,10 +1745,10 @@ function cadNext(n){
   document.getElementById('cad-fill').style.width=(cadStep/3*100)+'%';
   document.getElementById('cad-counter').textContent=cadStep+' / 3';
 }
-function cadBack(){if(cadStep>1){cadNext(cadStep-1);}}
+function cadBack(){ if(cadStep>1){ cadNext(cadStep-1); } }
 function addMarina(){
   const btn=document.getElementById('add-marina-btn');
-  btn.textContent='✓ Adicionada';btn.style.background='var(--g)';btn.style.color='#fff';
+  btn.textContent='✓ Adicionada'; btn.style.background='var(--g)'; btn.style.color='#fff';
   showToast('Marina adicionada como contato!');
 }
 
@@ -1710,7 +1762,7 @@ function updatePreview(){
 function sendInvite(){
   const n=document.getElementById('inv-name').value.trim();
   const e=document.getElementById('inv-email').value.trim();
-  if(!n||!e){showToast('Preencha nome e e-mail');return;}
+  if(!n||!e){ showToast('Preencha nome e e-mail'); return; }
   showToast('✅ Convite enviado para '+n+'!');
   document.getElementById('inv-name').value='';
   document.getElementById('inv-email').value='';
@@ -1720,218 +1772,66 @@ function sendInvite(){
 }
 
 // ── filter tabs ──
-function selTab(btn){btn.closest('div').querySelectorAll('.d-tab').forEach(t=>t.classList.remove('on'));btn.classList.add('on');showToast('Filtro aplicado');}
+function selTab(btn){ btn.closest('div').querySelectorAll('.d-tab').forEach(t=>t.classList.remove('on')); btn.classList.add('on'); showToast('Filtro aplicado'); }
 
 // ── toast ──
 let toastT;
 function showToast(msg){
   const t=document.getElementById('toast');
-  t.textContent=msg;t.classList.add('show');
-  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2400);
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2400);
 }
 
-// ── feedback ──
-function abrirFeedback(){
-  window.open('https://forms.gle/AYpwaHT6KFwjBipAA','_blank');
-}
+function abrirFeedback(){ window.open('https://forms.gle/AYpwaHT6KFwjBipAA','_blank'); }
 
 // ── fotos ──
 let fotosUpload = [];
 function handleFotoUpload(e){
-  const files = Array.from(e.target.files).slice(0, 3 - fotosUpload.length);
-  files.forEach(file => {
-    if(fotosUpload.length >= 3){ showToast('Máximo de 3 fotos por avaliação'); return; }
-    const reader = new FileReader();
-    reader.onload = ev => {
-      fotosUpload.push({src: ev.target.result, name: file.name});
-      renderFotoPreview();
-    };
+  const files=Array.from(e.target.files).slice(0,3-fotosUpload.length);
+  files.forEach(file=>{
+    if(fotosUpload.length>=3){ showToast('Máximo de 3 fotos por avaliação'); return; }
+    const reader=new FileReader();
+    reader.onload=ev=>{ fotosUpload.push({src:ev.target.result,name:file.name}); renderFotoPreview(); };
     reader.readAsDataURL(file);
   });
-  e.target.value = '';
+  e.target.value='';
 }
 function renderFotoPreview(){
-  const wrap = document.getElementById('foto-preview-wrap');
-  const area = document.getElementById('foto-upload-area');
-  wrap.innerHTML = fotosUpload.map((f,i) => `
+  const wrap=document.getElementById('foto-preview-wrap');
+  const area=document.getElementById('foto-upload-area');
+  wrap.innerHTML=fotosUpload.map((f,i)=>`
     <div class="foto-preview-item">
       <img class="foto-preview-img" src="${f.src}" onclick="openLightboxSrc('${f.src}','Sua foto')">
       <button class="foto-preview-del" onclick="removeFoto(${i})">✕</button>
     </div>`).join('');
-  area.style.display = fotosUpload.length >= 3 ? 'none' : '';
+  area.style.display=fotosUpload.length>=3?'none':'';
 }
-function removeFoto(i){
-  fotosUpload.splice(i,1);
-  renderFotoPreview();
-}
+function removeFoto(i){ fotosUpload.splice(i,1); renderFotoPreview(); }
 
-// Lightbox
-const mockFotos = {
-  mock1:{src:'', caption:'🌳 Parque Ramiro · pista principal · há 3 dias'},
-  mock2:{src:'', caption:'💡 Iluminação noturna · há 1 semana'},
-  mock3:{src:'', caption:'🛤️ Entrada do parque · há 2 semanas'},
+// ── lightbox ──
+const mockFotos={
+  mock1:{caption:'🌳 Parque Ramiro · pista principal · há 3 dias'},
+  mock2:{caption:'💡 Iluminação noturna · há 1 semana'},
+  mock3:{caption:'🛤️ Entrada do parque · há 2 semanas'}
 };
 function openLightbox(id){
-  // para mocks mostra placeholder visual
-  const lb = document.getElementById('lightbox');
-  const img = document.getElementById('lightbox-img');
-  const cap = document.getElementById('lightbox-caption');
-  img.style.display='none';
-  cap.textContent = mockFotos[id]?.caption || '';
-  lb.innerHTML = `<button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  const lb=document.getElementById('lightbox');
+  lb.innerHTML=`<button class="lightbox-close" onclick="closeLightbox()">✕</button>
     <div style="width:280px;height:200px;border-radius:var(--rs);background:linear-gradient(135deg,#2E5249,#3D6B5E);display:flex;align-items:center;justify-content:center;font-size:64px">${id==='mock1'?'🌳':id==='mock2'?'💡':'🛤️'}</div>
     <div class="lightbox-caption">${mockFotos[id]?.caption||''}</div>`;
   lb.classList.add('open');
 }
-function openLightboxSrc(src, caption){
-  const lb = document.getElementById('lightbox');
-  lb.innerHTML = `<button class="lightbox-close" onclick="closeLightbox()">✕</button>
+function openLightboxSrc(src,caption){
+  const lb=document.getElementById('lightbox');
+  lb.innerHTML=`<button class="lightbox-close" onclick="closeLightbox()">✕</button>
     <img class="lightbox-img" src="${src}" alt="">
     <div class="lightbox-caption">${caption}</div>`;
   lb.classList.add('open');
 }
-function closeLightbox(){
-  document.getElementById('lightbox').classList.remove('open');
-}
+function closeLightbox(){ document.getElementById('lightbox').classList.remove('open'); }
 
-// ── Supabase config ──
-const SUPA_URL = 'COLE_SUA_PROJECT_URL_AQUI';
-const SUPA_KEY = 'COLE_SUA_ANON_KEY_AQUI';
-const supabase = window.supabase ? supabase.createClient(SUPA_URL, SUPA_KEY) : null;
-
-// ── estado da avaliação ──
-const evalData = {
-  local_id: null,
-  local_nome: null,
-  contexto: null,
-  iluminacao: null,
-  movimento: null,
-  pontos_observados: [],
-  ocorrencia: null,
-  sensacao_geral: null,
-  comentario: null,
-  fotos_urls: []
-};
-
-// sobrescreve selectEval para capturar dados
-function selectEval(btn, step, type) {
-  btn.closest('.eval-opts').querySelectorAll('.eval-opt').forEach(b => b.classList.remove('sel','sel-w','sel-r'));
-  const cls = type==='r' ? 'sel-r' : type==='w' ? 'sel-w' : 'sel';
-  btn.classList.add(cls);
-  // captura valor
-  const titulo = btn.querySelector('.eval-opt-title')?.textContent || '';
-  if (step === 1) { evalData.local_nome = titulo; evalData.local_id = titulo.toLowerCase().replace(/\s+/g,'-'); }
-  if (step === 2) evalData.contexto = titulo;
-  if (step === 3) evalData.iluminacao = type;
-  if (step === 4) evalData.movimento = type;
-  if (step === 7) evalData.sensacao_geral = type;
-  setTimeout(() => evalNext(), 320);
-}
-
-function selectOcorrencia(btn, tipo) {
-  btn.closest('.eval-opts').querySelectorAll('.eval-opt').forEach(b => b.classList.remove('sel','sel-w','sel-r'));
-  const cls = tipo==='nenhuma' ? 'sel' : tipo==='outro' ? 'sel-w' : 'sel-r';
-  btn.classList.add(cls);
-  evalData.ocorrencia = tipo;
-  setTimeout(() => evalNext(), 320);
-}
-
-// ── upload fotos para Supabase Storage ──
-async function uploadFotos() {
-  if (!supabase || fotosUpload.length === 0) return [];
-  const urls = [];
-  for (const foto of fotosUpload) {
-    try {
-      const blob = await fetch(foto.src).then(r => r.blob());
-      const ext = foto.name.split('.').pop() || 'jpg';
-      const path = `avaliacoes/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
-      const { data, error } = await supabase.storage.from('fotos').upload(path, blob, { contentType: blob.type });
-      if (!error) {
-        const { data: urlData } = supabase.storage.from('fotos').getPublicUrl(path);
-        urls.push(urlData.publicUrl);
-      }
-    } catch(e) { console.error('Erro upload foto:', e); }
-  }
-  return urls;
-}
-
-// ── salva avaliação no banco ──
-async function salvarAvaliacao() {
-  evalData.comentario = document.getElementById('eval-comentario')?.value || '';
-  evalData.pontos_observados = Array.from(
-    document.querySelectorAll('#pontos-chips .ocorr-chip.sel-r')
-  ).map(b => b.textContent.trim());
-
-  showToast('⏳ Enviando avaliação…');
-
-  let fotosUrls = [];
-  try { fotosUrls = await uploadFotos(); } catch(e) {}
-
-  const payload = {
-    local_id:           evalData.local_id,
-    local_nome:         evalData.local_nome,
-    contexto:           evalData.contexto,
-    iluminacao:         evalData.iluminacao,
-    movimento:          evalData.movimento,
-    pontos_observados:  evalData.pontos_observados,
-    ocorrencia:         evalData.ocorrencia,
-    sensacao_geral:     evalData.sensacao_geral,
-    comentario:         evalData.comentario,
-    fotos_urls:         fotosUrls,
-    criado_em:          new Date().toISOString()
-  };
-
-  if (supabase && SUPA_URL !== 'COLE_SUA_PROJECT_URL_AQUI') {
-    const { error } = await supabase.from('avaliacoes').insert([payload]);
-    if (error) {
-      console.error('Erro Supabase:', error);
-      showToast('⚠️ Erro ao enviar. Tente novamente.');
-      return;
-    }
-  } else {
-    // modo demo sem Supabase configurado
-    console.log('📝 Avaliação (demo):', payload);
-  }
-
-  showToast('✅ Avaliação enviada! Obrigada.');
-  setTimeout(() => {
-    evalStep = 1;
-    fotosUpload = [];
-    renderFotoPreview();
-    // limpa estado
-    Object.keys(evalData).forEach(k => evalData[k] = Array.isArray(evalData[k]) ? [] : null);
-    document.querySelectorAll('.eval-opt').forEach(b => b.classList.remove('sel','sel-w','sel-r'));
-    document.querySelectorAll('.ocorr-chip').forEach(b => b.classList.remove('sel-r'));
-    const ta = document.getElementById('eval-comentario');
-    if (ta) ta.value = '';
-    showEvalStep();
-    back();
-  }, 1400);
-}
-
-function evalNext() {
-  if (evalStep < evalSteps) {
-    evalStep++;
-    showEvalStep();
-  } else {
-    salvarAvaliacao();
-  }
-}
-
-function evalBack() { if (evalStep > 1) { evalStep--; showEvalStep(); } }
-
-function showEvalStep() {
-  document.querySelectorAll('.eval-step').forEach((s,i) => s.classList.toggle('on', i===evalStep-1));
-  document.getElementById('eval-fill').style.width = (evalStep/evalSteps*100)+'%';
-  document.getElementById('eval-step-counter').textContent = evalStep+' / '+evalSteps;
-  document.getElementById('eval-back-btn').style.display = evalStep > 1 ? 'flex' : 'none';
-  document.getElementById('eval-next-btn').textContent = evalStep === evalSteps ? 'Enviar avaliação ✓' : 'Continuar →';
-  // no step 7 o botão "Continuar" só avança se clicar (sensação geral auto-avança, mas comentário não)
-  document.getElementById('eval-next-btn').style.display = 'flex';
-}
-
-// init
-document.getElementById('eval-back-btn').style.display = 'none';
+// ── init ──
+document.getElementById('eval-back-btn').style.display='none';
 </script>
 <!-- Botão flutuante de feedback -->
 <button
