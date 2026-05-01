@@ -15,6 +15,7 @@
     })(window, document, "clarity", "script", "wj0f2f8old");
 </script>
 
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <!-- Tally feedback widget -->
 <script async src="https://tally.so/widgets/embed.js"></script>
@@ -441,7 +442,8 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
 
     <div class="divider"></div>
 
-    <!-- Post 1 — avaliação recente -->
+    <div id="feed-avaliacoes-list"></div>
+    <!-- Post 1 — avaliação recente (demo) -->
     <div style="height:12px"></div>
     <div class="post">
       <div class="post-header">
@@ -1176,6 +1178,13 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
         <div style="flex:1"><div style="font-size:15px;font-weight:500">Privacidade</div><div style="font-size:12px;color:var(--t3)">Dados e permissões</div></div>
         <span style="color:var(--t3);font-size:20px">›</span>
       </div>
+      <a href="https://forms.gle/AYpwaHT6KFwjBipAA" target="_blank" rel="noopener noreferrer" style="text-decoration:none">
+        <div class="menu-row">
+          <div class="menu-icon" style="background:#2E5249">💬</div>
+          <div style="flex:1"><div style="font-size:15px;font-weight:600;color:#2E5249">Dar feedback</div><div style="font-size:12px;color:#999">Conte o que você achou do app</div></div>
+          <span style="color:var(--t3);font-size:20px">›</span>
+        </div>
+      </a>
       <div class="gap24"></div>
     </div>
   </div>
@@ -1397,8 +1406,20 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
 <div class="toast" id="toast"></div>
 
 <script>
+// ══════════════════════════════════════════
+// CONFIGURAÇÃO SUPABASE — cole suas credenciais
+// ══════════════════════════════════════════
+const SUPA_URL = 'COLE_SUA_PROJECT_URL_AQUI';
+const SUPA_KEY = 'COLE_SUA_ANON_KEY_AQUI';
+let sb = null;
+try {
+  if (window.supabase && SUPA_URL !== 'COLE_SUA_PROJECT_URL_AQUI') {
+    sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+  }
+} catch(e) { console.warn('Supabase não configurado, modo demo.'); }
+
 // ── navigation ──
-let history = ['onboard'];
+let navHistory = ['onboard'];
 const screens = {
   'onboard':'s-onboard','feed':'s-feed','explorar':'s-explorar',
   'detalhe':'s-detalhe','avaliar':'s-avaliar','rota':'s-rota',
@@ -1408,7 +1429,7 @@ const screens = {
 const rootScreens = new Set(['feed','explorar','rota','perfil']);
 
 function go(name) {
-  const prev = history[history.length-1];
+  const prev = navHistory[navHistory.length-1];
   if (prev === name) return;
   const cur = document.getElementById(screens[prev]);
   if (cur) {
@@ -1424,14 +1445,15 @@ function go(name) {
     const sc = next.querySelector('.scroll');
     if (sc) sc.scrollTop = 0;
   }
-  history.push(name);
+  navHistory.push(name);
+  if (name === 'feed') carregarFeedAvaliacoes();
 }
 
 function back() {
-  if (history.length <= 1) return;
-  history.pop();
-  const prev = history[history.length-1];
-  document.querySelectorAll('.screen.active').forEach(s=>{
+  if (navHistory.length <= 1) return;
+  navHistory.pop();
+  const prev = navHistory[navHistory.length-1];
+  document.querySelectorAll('.screen.active').forEach(s => {
     s.classList.remove('active');
     s.classList.add('prev');
     setTimeout(()=>s.classList.remove('prev'),350);
@@ -1459,19 +1481,19 @@ const places = {
     reasons:{manha:['🌑 Iluminação ruim mesmo de dia','👥 Muito isolada','⚠️ Sem câmeras ou vigilância'],tarde:['🌑 Iluminação insuficiente','👥 Baixíssimo movimento'],noite:['🔴 Sem nenhuma iluminação','🚨 Relatos de assédio recentes','👤 Praticamente vazia']}},
   vilagermanica:{icon:'🎪',type:'🎪 Parque/Eventos',name:'Parque Vila Germânica',addr:'Velha · Blumenau',badgeCls:'bs',badgeTxt:'Seguro',
     t:{manha:[86,84,80,90],tarde:[91,90,88,95],noite:[74,72,68,80]},
-    reasons:{manha:['💡 Área bem iluminada e organizada','👥 Alto fluxo de visitantes','🛡️ Segurança privada no local'],tarde:['☀️ Ampla visibilidade','👥 Muito movimentado','🛡️ Segurança ativa em todos os setores'],noite:['💡 Boa iluminação nos corredores principais','👥 Movimento reduz após encerramento dos eventos','⚠️ Arredores do estacionamento com atenção']}},
+    reasons:{manha:['💡 Área bem iluminada','👥 Alto fluxo de visitantes','🛡️ Segurança privada'],tarde:['☀️ Ampla visibilidade','👥 Muito movimentado','🛡️ Segurança ativa'],noite:['💡 Boa iluminação nos corredores','👥 Movimento reduz após eventos','⚠️ Arredores do estacionamento']}},
   rua15:{icon:'🛍️',type:'🛍️ Espaço público',name:'Rua XV de Novembro',addr:'Centro · Blumenau',badgeCls:'bs',badgeTxt:'Seguro',
     t:{manha:[88,86,84,92],tarde:[92,90,90,95],noite:[65,60,58,72]},
-    reasons:{manha:['💡 Calçadão bem iluminado','👥 Alto fluxo de pedestres e comércio','📹 Câmeras de monitoramento na via'],tarde:['☀️ Excelente visibilidade','👥 Muito movimentado','🛡️ Presença de segurança municipal'],noite:['⚠️ Movimento cai bastante após fechamento do comércio','💡 Iluminação pública ok','👥 Evitar horários de madrugada']}},
-  teatrocarlosgomes:{icon:'🎭',type:'🎭 Equipamento cultural',name:'Teatro Carlos Gomes',addr:'Centro · Blumenau',badgeCls:'bs',badgeTxt:'Seguro',
+    reasons:{manha:['💡 Calçadão bem iluminado','👥 Alto fluxo','📹 Câmeras na via'],tarde:['☀️ Excelente visibilidade','👥 Muito movimentado','🛡️ Segurança municipal'],noite:['⚠️ Movimento cai após comércio fechar','💡 Iluminação pública ok']}},
+  teatrocarlosgomes:{icon:'🎭',type:'🎭 Cultural',name:'Teatro Carlos Gomes',addr:'Centro · Blumenau',badgeCls:'bs',badgeTxt:'Seguro',
     t:{manha:[80,78,76,84],tarde:[85,84,82,88],noite:[78,76,72,84]},
-    reasons:{manha:['💡 Praça em volta bem iluminada','👥 Movimento moderado no entorno','📹 Câmeras na fachada do teatro'],tarde:['💡 Boa iluminação','👥 Fluxo maior em dias de eventos','🛡️ Segurança presente nas sessões'],noite:['💡 Teatro e praça iluminados durante eventos','👥 Movimento concentrado nos horários de apresentação','⚠️ Arredores mais vazios após encerramento']}},
+    reasons:{manha:['💡 Praça bem iluminada','👥 Movimento no entorno','📹 Câmeras na fachada'],tarde:['💡 Boa iluminação','🛡️ Segurança nas sessões'],noite:['💡 Iluminado durante eventos','⚠️ Arredores mais vazios após encerramento']}},
   catedral:{icon:'⛪',type:'⛪ Espaço público',name:'Catedral São Paulo Apóstolo',addr:'Centro · Blumenau',badgeCls:'bs',badgeTxt:'Seguro',
     t:{manha:[82,80,78,86],tarde:[84,82,80,88],noite:[60,58,52,68]},
-    reasons:{manha:['💡 Praça central bem iluminada','👥 Movimento constante de fiéis e turistas','📹 Monitoramento na área central'],tarde:['☀️ Boa visibilidade','👥 Região central movimentada','💡 Iluminação adequada'],noite:['⚠️ Praça mais vazia após as missas','💡 Iluminação pública presente','👥 Evitar permanecer sozinha no entorno']}},
+    reasons:{manha:['💡 Praça central iluminada','👥 Movimento de fiéis e turistas','📹 Monitoramento'],tarde:['☀️ Boa visibilidade','👥 Região movimentada'],noite:['⚠️ Praça mais vazia após missas','💡 Iluminação pública presente']}},
   spitzkopf:{icon:'🌲',type:'🌲 Parque natural',name:'Parque Ecológico Spitzkopf',addr:'Área rural · Blumenau',badgeCls:'bw',badgeTxt:'Atenção',
     t:{manha:[68,65,60,75],tarde:[72,70,65,78],noite:[30,28,20,40]},
-    reasons:{manha:['💡 Trilhas com baixa iluminação natural','👥 Movimento moderado nos fins de semana','⚠️ Ir sempre acompanhada nas trilhas mais longas'],tarde:['☀️ Melhor horário para visitar','👥 Mais movimento de grupos e famílias','⚠️ Sinalizar saída antes de entrar nas trilhas'],noite:['🔴 Parque fechado após anoitecer','🌑 Área rural sem iluminação pública','🚨 Não recomendado à noite']}}
+    reasons:{manha:['💡 Trilhas com pouca iluminação','👥 Movimento moderado fins de semana','⚠️ Ir acompanhada'],tarde:['☀️ Melhor horário','👥 Grupos e famílias','⚠️ Sinalizar saída'],noite:['🔴 Parque fechado à noite','🌑 Sem iluminação pública','🚨 Não recomendado']}}
 };
 let curPlace='parque', curTime='manha';
 
@@ -1549,6 +1571,7 @@ function openPlace(id){
   badge.innerHTML='<div class="dot"></div>'+p.badgeTxt;
   document.querySelectorAll('.d-tab').forEach((t,i)=>t.classList.toggle('on',i===0));
   renderDScore('manha');
+  carregarAvaliacoesDoLocal(id);
   go('detalhe');
 }
 
@@ -1574,35 +1597,175 @@ function renderDScore(t){
 }
 function bar(l,v,c){return`<div class="d-bar-row"><div class="d-bar-label">${l}</div><div class="d-bar-bg"><div class="d-bar-fill" style="width:${v}%;background:${c}"></div></div><div class="d-bar-val">${v}</div></div>`;}
 
-// ── Supabase ──
-const SUPA_URL = 'COLE_SUA_PROJECT_URL_AQUI';
-const SUPA_KEY = 'COLE_SUA_ANON_KEY_AQUI';
-let sb = null;
-try {
-  if (window.supabase && SUPA_URL !== 'COLE_SUA_PROJECT_URL_AQUI') {
-    sb = window.supabase.createClient(SUPA_URL, SUPA_KEY);
-  }
-} catch(e) { console.warn('Supabase não configurado, modo demo.'); }
+// ══════════════════════════════════════════
+// SUPABASE — CARREGAR AVALIAÇÕES NO FEED
+// ══════════════════════════════════════════
+function tempoRelativo(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const min = Math.floor(diff/60000);
+  if (min < 60) return `há ${min} min`;
+  const h = Math.floor(min/60);
+  if (h < 24) return `há ${h}h`;
+  const d = Math.floor(h/24);
+  return d === 1 ? 'ontem' : `há ${d} dias`;
+}
 
-// ── estado da avaliação ──
+function badgePorSensacao(s) {
+  if (s==='s') return 'bs';
+  if (s==='w') return 'bw';
+  return 'br';
+}
+function textoSensacao(s) {
+  if (s==='s') return 'Seguro';
+  if (s==='w') return 'Atenção';
+  return 'Risco alto';
+}
+function corSensacao(s) {
+  if (s==='s') return 'var(--safe)';
+  if (s==='w') return 'var(--warn)';
+  return 'var(--risk)';
+}
+
+function renderCardAvaliacao(av) {
+  const badgeCls = badgePorSensacao(av.sensacao_geral);
+  const badgeTxt = textoSensacao(av.sensacao_geral);
+  const cor = corSensacao(av.sensacao_geral);
+  const tempo = tempoRelativo(av.criado_em);
+  const pontos = (av.pontos_observados||[]).slice(0,3);
+  const fotos = av.fotos_urls || [];
+  const icone = av.local_nome?.toLowerCase().includes('parque')?'🌳':
+                av.local_nome?.toLowerCase().includes('terminal')?'🚇':
+                av.local_nome?.toLowerCase().includes('bar')?'🍺':
+                av.local_nome?.toLowerCase().includes('shopping')?'🛍️':'📍';
+
+  const chipsCor = av.sensacao_geral==='s'?'good':av.sensacao_geral==='w'?'mid':'bad';
+  const chips = pontos.map(p=>`<div class="chip ${chipsCor}">${p}</div>`).join('');
+
+  // foto principal ou placeholder
+  const fotoArea = fotos.length > 0
+    ? `<img src="${fotos[0]}" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">`
+    : `<div class="post-img-icon">${icone}</div>`;
+
+  // galeria de fotos extras
+  const galeriaExtra = fotos.length > 1
+    ? `<div class="foto-galeria" style="padding:0 14px 12px">
+        ${fotos.map(u=>`<img src="${u}" class="foto-thumb" onclick="openLightboxSrc('${u}','Foto da avaliação')" style="width:80px;height:64px;object-fit:cover;border-radius:8px;flex-shrink:0;cursor:pointer">`).join('')}
+       </div>`
+    : '';
+
+  return `
+  <div class="post">
+    <div class="post-header">
+      <div class="post-avatar">${icone}</div>
+      <div class="post-info">
+        <div class="post-name">${av.local_nome || 'Local avaliado'}</div>
+        <div class="post-meta">avaliação da comunidade · ${tempo}</div>
+      </div>
+      <div class="post-badge ${badgeCls}"><div class="dot"></div>${badgeTxt}</div>
+    </div>
+    <div class="post-img" style="position:relative;overflow:hidden">
+      ${fotoArea}
+      <div class="post-type-tag">${icone} ${av.contexto||'Visita'}</div>
+      <div class="post-score-pill">
+        <div class="score-num" style="color:${cor}">${badgeTxt==='Seguro'?'✅':badgeTxt==='Atenção'?'⚠️':'🔴'}</div>
+        <div style="flex:1;font-size:13px;color:var(--t2)">${av.comentario||'Sem comentário adicional.'}</div>
+      </div>
+    </div>
+    ${galeriaExtra}
+    <div class="post-body">
+      <div class="post-place-name">${av.local_nome||'Local'}</div>
+      <div class="post-addr">${av.contexto||''}</div>
+      ${av.comentario?`<div class="post-comment">${av.comentario}</div>`:''}
+      <div class="post-chips">${chips}</div>
+      ${av.ocorrencia && av.ocorrencia!=='nenhuma'?`<div class="chip bad">⚠️ ${av.ocorrencia}</div>`:''}
+    </div>
+  </div>`;
+}
+
+async function carregarFeedAvaliacoes() {
+  const container = document.getElementById('feed-avaliacoes-list');
+  if (!container) return;
+  if (!sb) return; // sem Supabase configurado, mostra só os demos
+  try {
+    const { data, error } = await sb
+      .from('avaliacoes')
+      .select('*')
+      .order('criado_em', { ascending: false })
+      .limit(20);
+    if (error) { console.error('Erro ao carregar feed:', error); return; }
+    if (!data || data.length === 0) { container.innerHTML = ''; return; }
+    container.innerHTML = data.map(renderCardAvaliacao).join('');
+  } catch(e) { console.error('Erro feed:', e); }
+}
+
+// ══════════════════════════════════════════
+// SUPABASE — AVALIAÇÕES NO DETALHE DO LOCAL
+// ══════════════════════════════════════════
+async function carregarAvaliacoesDoLocal(localId) {
+  const container = document.getElementById('d-comments');
+  if (!container || !sb) return;
+  try {
+    const { data, error } = await sb
+      .from('avaliacoes')
+      .select('*')
+      .eq('local_id', localId)
+      .order('criado_em', { ascending: false })
+      .limit(10);
+    if (error || !data || data.length === 0) return;
+
+    const titulo = `<div style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);margin-bottom:12px">Avaliações da comunidade</div>`;
+    const cards = data.map(av => {
+      const badgeCls = badgePorSensacao(av.sensacao_geral);
+      const badgeTxt = textoSensacao(av.sensacao_geral);
+      const tempo = tempoRelativo(av.criado_em);
+      const fotos = av.fotos_urls || [];
+      const chips = (av.pontos_observados||[]).slice(0,3).map(p=>`<div class="chip">${p}</div>`).join('');
+      const fotosHtml = fotos.length > 0
+        ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+            ${fotos.map(u=>`<img src="${u}" onclick="openLightboxSrc('${u}','Foto da avaliação')" style="width:72px;height:56px;object-fit:cover;border-radius:8px;cursor:pointer;border:.5px solid var(--bd)">`).join('')}
+           </div>`
+        : '';
+      return `
+      <div class="d-comment">
+        <div class="d-comment-top">
+          <div class="d-comment-avatar" style="background:linear-gradient(135deg,var(--g),var(--gl))">👩</div>
+          <div class="d-comment-meta">
+            <div class="d-comment-name">Avaliação anônima</div>
+            <div class="d-comment-ctx">${av.contexto||''} · ${tempo}</div>
+          </div>
+          <div class="post-badge ${badgeCls}" style="font-size:10px;padding:3px 8px"><div class="dot"></div>${badgeTxt}</div>
+        </div>
+        ${av.comentario?`<div class="d-comment-text">${av.comentario}</div>`:''}
+        <div class="d-comment-chips">${chips}</div>
+        ${av.ocorrencia && av.ocorrencia!=='nenhuma'?`<div class="chip bad" style="margin-top:6px">⚠️ ${av.ocorrencia}</div>`:''}
+        ${fotosHtml}
+      </div>`;
+    }).join('');
+
+    container.innerHTML = titulo + cards;
+  } catch(e) { console.error('Erro detalhe:', e); }
+}
+
+// ══════════════════════════════════════════
+// AVALIAR — STEPPER + ENVIO SUPABASE
+// ══════════════════════════════════════════
+let evalStep = 1;
+const evalSteps = 7;
+
 const evalData = {
   local_id: null, local_nome: null, contexto: null,
   iluminacao: null, movimento: null, pontos_observados: [],
   ocorrencia: null, sensacao_geral: null, comentario: null
 };
 
-// ── avaliar stepper ──
-let evalStep = 1;
-const evalSteps = 7;
-
-function toggleChip(btn){ btn.classList.toggle('sel-r'); }
+function toggleChip(btn) { btn.classList.toggle('sel-r'); }
 
 function selectEval(btn, step, type) {
   btn.closest('.eval-opts').querySelectorAll('.eval-opt').forEach(b=>b.classList.remove('sel','sel-w','sel-r'));
   const cls = type==='r'?'sel-r':type==='w'?'sel-w':'sel';
   btn.classList.add(cls);
-  const titulo = btn.querySelector('.eval-opt-title')?.textContent || '';
-  if (step===1) { evalData.local_nome=titulo; evalData.local_id=titulo.toLowerCase().replace(/\s+/g,'-'); }
+  const titulo = btn.querySelector('.eval-opt-title')?.textContent||'';
+  if (step===1) { evalData.local_nome=titulo; evalData.local_id=titulo.toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,''); }
   if (step===2) evalData.contexto=titulo;
   if (step===3) evalData.iluminacao=type;
   if (step===4) evalData.movimento=type;
@@ -1631,7 +1794,7 @@ async function uploadFotos() {
         const {data:u} = sb.storage.from('fotos').getPublicUrl(path);
         urls.push(u.publicUrl);
       }
-    } catch(e){ console.error('Erro upload:', e); }
+    } catch(e){ console.error('Erro upload foto:', e); }
   }
   return urls;
 }
@@ -1642,34 +1805,51 @@ async function salvarAvaliacao() {
     document.querySelectorAll('#pontos-chips .ocorr-chip.sel-r')
   ).map(b=>b.textContent.trim());
 
+  // sensação padrão se não selecionou
+  if (!evalData.sensacao_geral) evalData.sensacao_geral = 's';
+
   showToast('⏳ Enviando avaliação…');
+
   let fotosUrls = [];
   try { fotosUrls = await uploadFotos(); } catch(e){}
 
   const payload = {
-    local_id: evalData.local_id, local_nome: evalData.local_nome,
-    contexto: evalData.contexto, iluminacao: evalData.iluminacao,
-    movimento: evalData.movimento, pontos_observados: evalData.pontos_observados,
-    ocorrencia: evalData.ocorrencia, sensacao_geral: evalData.sensacao_geral,
-    comentario: evalData.comentario, fotos_urls: fotosUrls,
+    local_id: evalData.local_id,
+    local_nome: evalData.local_nome,
+    contexto: evalData.contexto,
+    iluminacao: evalData.iluminacao,
+    movimento: evalData.movimento,
+    pontos_observados: evalData.pontos_observados,
+    ocorrencia: evalData.ocorrencia,
+    sensacao_geral: evalData.sensacao_geral,
+    comentario: evalData.comentario,
+    fotos_urls: fotosUrls,
     criado_em: new Date().toISOString()
   };
 
   if (sb) {
     const {error} = await sb.from('avaliacoes').insert([payload]);
-    if (error) { console.error('Supabase error:', error); showToast('⚠️ Erro ao enviar. Tente novamente.'); return; }
+    if (error) {
+      console.error('Supabase error:', error);
+      showToast('⚠️ Erro ao enviar: '+error.message);
+      return;
+    }
   } else {
-    console.log('📝 Avaliação (demo, Supabase não configurado):', payload);
+    console.log('📝 Modo demo — avaliação:', payload);
   }
 
   showToast('✅ Avaliação enviada! Obrigada.');
   setTimeout(()=>{
+    // reset
     evalStep=1; fotosUpload=[]; renderFotoPreview();
     Object.keys(evalData).forEach(k=>evalData[k]=Array.isArray(evalData[k])?[]:null);
     document.querySelectorAll('.eval-opt').forEach(b=>b.classList.remove('sel','sel-w','sel-r'));
     document.querySelectorAll('.ocorr-chip').forEach(b=>b.classList.remove('sel-r'));
     const ta=document.getElementById('eval-comentario'); if(ta) ta.value='';
-    showEvalStep(); back();
+    showEvalStep();
+    back();
+    // recarrega feed depois de voltar
+    setTimeout(()=>carregarFeedAvaliacoes(), 500);
   }, 1400);
 }
 
@@ -1691,16 +1871,13 @@ function showEvalStep() {
 let checkinSeconds=300, checkinInterval=null, checkinActive=false;
 function startCheckin(){
   if(checkinInterval) clearInterval(checkinInterval);
-  checkinActive=true; checkinSeconds=300;
-  updateCheckinDisplay();
+  checkinActive=true; checkinSeconds=300; updateCheckinDisplay();
   checkinInterval=setInterval(()=>{
-    checkinSeconds--;
-    updateCheckinDisplay();
+    checkinSeconds--; updateCheckinDisplay();
     if(checkinSeconds<=0){
       clearInterval(checkinInterval);
       const btn=document.getElementById('checkin-btn');
-      btn.textContent='⚠️ Você está bem?';
-      btn.classList.add('alert');
+      btn.textContent='⚠️ Você está bem?'; btn.classList.add('alert');
       showToast('⚠️ Check-in não respondido! Mãe foi avisada.');
     }
   },1000);
@@ -1714,8 +1891,7 @@ function doCheckin(){
   showToast('✅ Check-in confirmado! Próximo em 5 min.');
   checkinSeconds=300;
   const btn=document.getElementById('checkin-btn');
-  btn.textContent='✅ Estou bem';
-  btn.classList.remove('alert');
+  btn.textContent='✅ Estou bem'; btn.classList.remove('alert');
   if(checkinActive) startCheckin();
 }
 
@@ -1729,8 +1905,7 @@ function startSharing(name){
 function stopSharing(){
   document.getElementById('sharing-pill').style.display='none';
   if(checkinInterval) clearInterval(checkinInterval);
-  checkinActive=false; checkinSeconds=300;
-  updateCheckinDisplay();
+  checkinActive=false; checkinSeconds=300; updateCheckinDisplay();
   const btn=document.getElementById('checkin-btn');
   btn.textContent='✅ Estou bem'; btn.classList.remove('alert');
   showToast('Compartilhamento encerrado');
@@ -1745,7 +1920,7 @@ function cadNext(n){
   document.getElementById('cad-fill').style.width=(cadStep/3*100)+'%';
   document.getElementById('cad-counter').textContent=cadStep+' / 3';
 }
-function cadBack(){ if(cadStep>1){ cadNext(cadStep-1); } }
+function cadBack(){ if(cadStep>1) cadNext(cadStep-1); }
 function addMarina(){
   const btn=document.getElementById('add-marina-btn');
   btn.textContent='✓ Adicionada'; btn.style.background='var(--g)'; btn.style.color='#fff';
@@ -1754,10 +1929,8 @@ function addMarina(){
 
 // ── convite ──
 function updatePreview(){
-  const n=document.getElementById('inv-name').value;
-  const m=document.getElementById('inv-msg').value;
-  document.getElementById('prev-name').textContent=n||'Sua amiga';
-  document.getElementById('prev-msg').textContent=m;
+  document.getElementById('prev-name').textContent=document.getElementById('inv-name').value||'Sua amiga';
+  document.getElementById('prev-msg').textContent=document.getElementById('inv-msg').value;
 }
 function sendInvite(){
   const n=document.getElementById('inv-name').value.trim();
@@ -1781,15 +1954,14 @@ function showToast(msg){
   t.textContent=msg; t.classList.add('show');
   clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2400);
 }
-
 function abrirFeedback(){ window.open('https://forms.gle/AYpwaHT6KFwjBipAA','_blank'); }
 
 // ── fotos ──
-let fotosUpload = [];
+let fotosUpload=[];
 function handleFotoUpload(e){
   const files=Array.from(e.target.files).slice(0,3-fotosUpload.length);
   files.forEach(file=>{
-    if(fotosUpload.length>=3){ showToast('Máximo de 3 fotos por avaliação'); return; }
+    if(fotosUpload.length>=3){ showToast('Máximo de 3 fotos'); return; }
     const reader=new FileReader();
     reader.onload=ev=>{ fotosUpload.push({src:ev.target.result,name:file.name}); renderFotoPreview(); };
     reader.readAsDataURL(file);
@@ -1809,11 +1981,7 @@ function renderFotoPreview(){
 function removeFoto(i){ fotosUpload.splice(i,1); renderFotoPreview(); }
 
 // ── lightbox ──
-const mockFotos={
-  mock1:{caption:'🌳 Parque Ramiro · pista principal · há 3 dias'},
-  mock2:{caption:'💡 Iluminação noturna · há 1 semana'},
-  mock3:{caption:'🛤️ Entrada do parque · há 2 semanas'}
-};
+const mockFotos={mock1:{caption:'🌳 Parque Ramiro · pista principal'},mock2:{caption:'💡 Iluminação noturna'},mock3:{caption:'🛤️ Entrada do parque'}};
 function openLightbox(id){
   const lb=document.getElementById('lightbox');
   lb.innerHTML=`<button class="lightbox-close" onclick="closeLightbox()">✕</button>
@@ -1832,8 +2000,8 @@ function closeLightbox(){ document.getElementById('lightbox').classList.remove('
 
 // ── init ──
 document.getElementById('eval-back-btn').style.display='none';
-</script>
-<!-- Botão flutuante de feedback -->
+carregarFeedAvaliacoes();
+</script><!-- Botão flutuante de feedback -->
 <button
   data-tally-open="mE5WKQ"
   data-tally-emoji-text="💚"
