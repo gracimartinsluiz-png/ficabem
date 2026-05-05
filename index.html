@@ -277,8 +277,10 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
 .toast.show{opacity:1}
 
 /* ── setores (categorias no header do feed) ── */
-.setores-wrap{overflow-x:auto;padding:14px 16px 10px;display:flex;gap:10px;flex-shrink:0}
-.setores-wrap::-webkit-scrollbar{display:none}
+.setores-wrap{overflow-x:auto;padding:14px 16px 14px;display:flex;gap:10px;flex-shrink:0;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:var(--gm) transparent}
+.setores-wrap::-webkit-scrollbar{height:4px}
+.setores-wrap::-webkit-scrollbar-track{background:transparent}
+.setores-wrap::-webkit-scrollbar-thumb{background:var(--gm);border-radius:2px}
 .setor{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex-shrink:0;min-width:64px}
 .setor-ring{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:28px;border:2px solid var(--bd);background:#fff;transition:all .18s;box-shadow:var(--sh);position:relative}
 .setor-ring.safe{border-color:var(--gm);background:var(--gp)}
@@ -608,11 +610,10 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
       <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
       Explorar
     </button>
-    <button class="ni" onclick="go('avaliar')" style="position:relative">
-      <div style="width:52px;height:52px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;top:-26px;box-shadow:0 4px 16px rgba(61,107,94,.4);border:3px solid var(--cream)">
+    <button class="ni" onclick="go('avaliar')" style="position:relative;padding-top:28px">
+      <div style="width:52px;height:52px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;top:-26px;left:50%;transform:translateX(-50%);box-shadow:0 4px 16px rgba(61,107,94,.4);border:3px solid var(--cream)">
         <svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
       </div>
-      <div style="height:14px"></div>
       Avaliar
     </button>
     <button class="ni" onclick="go('rota')">
@@ -902,7 +903,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
   <div class="bnav">
     <button class="ni" onclick="go('feed')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Feed</button>
     <button class="ni on" onclick="go('explorar')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</button>
-    <button class="ni" onclick="go('avaliar')" style="position:relative"><div style="width:52px;height:52px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;top:-26px;box-shadow:0 4px 16px rgba(61,107,94,.4);border:3px solid var(--cream)"><svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div style="height:14px"></div>Avaliar</button>
+    <button class="ni" onclick="go('avaliar')" style="position:relative;padding-top:28px"><div style="width:52px;height:52px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;top:-26px;left:50%;transform:translateX(-50%);box-shadow:0 4px 16px rgba(61,107,94,.4);border:3px solid var(--cream)"><svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>Avaliar</button>
     <button class="ni" onclick="go('rota')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>Rota</button>
     <button class="ni" onclick="go('perfil')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</button>
   </div>
@@ -1136,7 +1137,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
   <div class="bnav">
     <button class="ni" onclick="go('feed')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Feed</button>
     <button class="ni" onclick="go('explorar')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</button>
-    <button class="ni" onclick="go('avaliar')" style="position:relative"><div style="width:52px;height:52px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;top:-26px;box-shadow:0 4px 16px rgba(61,107,94,.4);border:3px solid var(--cream)"><svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div style="height:14px"></div>Avaliar</button>
+    <button class="ni" onclick="go('avaliar')" style="position:relative;padding-top:28px"><div style="width:52px;height:52px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;top:-26px;left:50%;transform:translateX(-50%);box-shadow:0 4px 16px rgba(61,107,94,.4);border:3px solid var(--cream)"><svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>Avaliar</button>
     <button class="ni on" onclick="go('rota')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>Rota</button>
     <button class="ni" onclick="go('perfil')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</button>
   </div>
@@ -1191,7 +1192,7 @@ html,body{height:100%;font-family:'DM Sans',sans-serif;background:var(--dark);co
   <div class="bnav">
     <button class="ni" onclick="go('feed')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Feed</button>
     <button class="ni" onclick="go('explorar')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>Explorar</button>
-    <button class="ni" onclick="go('avaliar')" style="position:relative"><div style="width:52px;height:52px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;top:-26px;box-shadow:0 4px 16px rgba(61,107,94,.4);border:3px solid var(--cream)"><svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div><div style="height:14px"></div>Avaliar</button>
+    <button class="ni" onclick="go('avaliar')" style="position:relative;padding-top:28px"><div style="width:52px;height:52px;background:var(--g);border-radius:50%;display:flex;align-items:center;justify-content:center;position:absolute;top:-26px;left:50%;transform:translateX(-50%);box-shadow:0 4px 16px rgba(61,107,94,.4);border:3px solid var(--cream)"><svg width="26" height="26" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></div>Avaliar</button>
     <button class="ni" onclick="go('rota')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3"/></svg>Rota</button>
     <button class="ni on" onclick="go('perfil')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Perfil</button>
   </div>
